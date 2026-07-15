@@ -1,0 +1,61 @@
+import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
+import TaskController from '@/actions/App/Http/Controllers/TaskController';
+import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
+import Heading from '@/components/heading';
+import { TaskDetails } from '@/components/tasks/task-details';
+import { Button } from '@/components/ui/button';
+import { index as tasksIndex } from '@/routes/tasks';
+import type { BreadcrumbItem, Task } from '@/types';
+
+type PageProps = {
+    task: Task;
+};
+
+export default function TaskShow({ task }: PageProps) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Tasks', href: tasksIndex() },
+        {
+            title: task.name ?? `Task #${task.id}`,
+            href: TaskController.show(task),
+        },
+    ];
+
+    setLayoutProps({ breadcrumbs });
+
+    return (
+        <>
+            <Head title={task.name ?? 'Task'} />
+
+            <div className="flex flex-1 flex-col gap-6 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <Heading
+                        title={task.name ?? 'Untitled task'}
+                        description={task.status}
+                    />
+
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" asChild>
+                            <Link href={TaskController.edit(task)}>
+                                Edit
+                            </Link>
+                        </Button>
+                        <DeleteAlertDialog
+                            trigger={
+                                <Button variant="destructive">Delete</Button>
+                            }
+                            title="Delete task?"
+                            description={`This will permanently delete "${task.name ?? `Task #${task.id}`}". This action cannot be undone.`}
+                            onConfirm={() =>
+                                router.delete(
+                                    TaskController.destroy.url(task),
+                                )
+                            }
+                        />
+                    </div>
+                </div>
+
+                <TaskDetails task={task} />
+            </div>
+        </>
+    );
+}

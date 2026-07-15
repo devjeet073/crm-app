@@ -1,0 +1,108 @@
+import { Head, router, useForm } from '@inertiajs/react';
+import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { index as rolesIndex, show as rolesShow, update as rolesUpdate } from '@/routes/roles';
+import type { BreadcrumbItem, Role } from '@/types';
+
+type PageProps = {
+    role: Role;
+    permissionColumns: string[];
+    permissionLevels: string[];
+};
+
+const PERMISSION_LABELS: Record<string, string> = {
+    assignment_permission:           'Assignment',
+    user_permission:                 'User Access',
+    message_permission:              'Messaging',
+    portal_permission:               'Portal',
+    group_email_account_permission:  'Group Email',
+    export_permission:               'Export',
+    mass_update_permission:          'Mass Update',
+    data_privacy_permission:         'Data Privacy',
+    follower_management_permission:  'Follower Management',
+    audit_permission:                'Audit Log',
+    mention_permission:              'Mentions',
+    user_calendar_permission:        'User Calendars',
+    lock_permission:                 'Record Lock',
+};
+
+export default function RoleEdit({ role, permissionColumns, permissionLevels }: PageProps) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Roles', href: rolesIndex() },
+        { title: role.name, href: rolesShow.url(role) },
+        { title: 'Edit', href: '' },
+    ];
+
+    const { data, setData, patch, errors, processing } = useForm<Record<string, string>>({
+        name: role.name,
+        description: role.description ?? '',
+        ...Object.fromEntries(permissionColumns.map((col) => [col, (role as Record<string, string>)[col] ?? 'not-set'])),
+    });
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        patch(rolesUpdate.url(role));
+    }
+
+    return (
+        <>
+            <Head title={`Edit: ${role.name}`} />
+            <div className="flex flex-1 flex-col gap-6 p-4">
+                <Heading title={`Edit "${role.name}"`} description="Update ACL role permissions" />
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <Card>
+                        <CardHeader><CardTitle>Basic Info</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
+                                <Input id="name" value={data.name} onChange={(e) => setData('name', e.target.value)} />
+                                {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="description">Description</Label>
+                                <Textarea id="description" value={data.description} onChange={(e) => setData('description', e.target.value)} rows={3} />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Scope Permissions</CardTitle>
+                            <CardDescription>Adjust global permission levels for this role</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                {permissionColumns.map((col) => (
+                                    <div key={col} className="space-y-1.5">
+                                        <Label htmlFor={col}>{PERMISSION_LABELS[col] ?? col}</Label>
+                                        <Select value={data[col]} onValueChange={(val) => setData(col, val)}>
+                                            <SelectTrigger id={col}><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                {permissionLevels.map((level) => (
+                                                    <SelectItem key={level} value={level}>{level}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <div className="flex gap-3">
+                        <Button type="submit" disabled={processing}>{processing ? 'Saving…' : 'Save Changes'}</Button>
+                        <Button variant="outline" type="button" onClick={() => router.visit(rolesShow.url(role))}>Cancel</Button>
+                    </div>
+                </form>
+            </div>
+        </>
+    );
+}
+
+RoleEdit.layout = { breadcrumbs: [] };

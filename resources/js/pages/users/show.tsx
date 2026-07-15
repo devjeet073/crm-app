@@ -1,0 +1,173 @@
+import { Head, router } from '@inertiajs/react';
+import { Pencil, Shield, Users, Clock, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import Heading from '@/components/heading';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { index as usersIndex, edit as usersEdit } from '@/routes/users';
+import type { BreadcrumbItem, CrmUser, AuthLogRecord, Role, Team } from '@/types';
+
+type PageProps = {
+    user: CrmUser & {
+        roles: Role[];
+        teams: Team[];
+        auth_log_records: AuthLogRecord[];
+    };
+};
+
+const TYPE_BADGE: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
+    admin: 'default', regular: 'secondary', portal: 'outline', api: 'outline', system: 'destructive',
+};
+
+export default function UserShow({ user }: PageProps) {
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Users', href: usersIndex() },
+        { title: user.name, href: '' },
+    ];
+
+    return (
+        <>
+            <Head title={user.name} />
+            <div className="flex flex-1 flex-col gap-6 p-4">
+                {/* Header */}
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        {/* Avatar */}
+                        <div
+                            className="flex h-14 w-14 items-center justify-center rounded-full text-xl font-semibold text-white"
+                            style={{ backgroundColor: user.avatar_color ?? '#6366f1' }}
+                        >
+                            {user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <Heading title={user.name} description={user.title ?? user.email} />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {user.is_active
+                            ? <span className="flex items-center gap-1 text-sm text-green-600 font-medium"><CheckCircle2 className="h-4 w-4" /> Active</span>
+                            : <span className="flex items-center gap-1 text-sm text-muted-foreground"><XCircle className="h-4 w-4" /> Inactive</span>
+                        }
+                        <Badge variant={TYPE_BADGE[user.type] ?? 'secondary'}>{user.type}</Badge>
+                        <Button variant="outline" asChild>
+                            <a href={usersEdit.url(user)}><Pencil className="mr-1.5 h-4 w-4" /> Edit</a>
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="grid gap-6 lg:grid-cols-3">
+                    {/* Profile */}
+                    <Card>
+                        <CardHeader><CardTitle>Profile</CardTitle></CardHeader>
+                        <CardContent className="space-y-3 text-sm">
+                            {[
+                                ['Email', user.email],
+                                ['Title', user.title],
+                                ['Salutation', user.salutation_name],
+                                ['Middle Name', user.middle_name],
+                                ['Gender', user.gender],
+                                ['Default Team', user.default_team?.name],
+                                ['User Type', user.type],
+                            ].map(([label, value]) => (
+                                <div key={label} className="flex justify-between gap-2">
+                                    <span className="text-muted-foreground">{label}</span>
+                                    <span className="font-medium text-right">{value ?? '—'}</span>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+
+                    {/* Roles */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Shield className="h-4 w-4" /> Roles ({user.roles.length})
+                            </CardTitle>
+                            <CardDescription>Directly assigned ACL roles</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {user.roles.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">No roles assigned.</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {user.roles.map((role) => (
+                                        <div key={role.id} className="flex items-center gap-2 rounded-md border px-3 py-2">
+                                            <Shield className="h-3.5 w-3.5 text-muted-foreground" />
+                                            <span className="text-sm font-medium">{role.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Teams */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Users className="h-4 w-4" /> Teams ({user.teams.length})
+                            </CardTitle>
+                            <CardDescription>Teams this user belongs to</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {user.teams.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">No teams assigned.</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {user.teams.map((team) => (
+                                        <div key={team.id} className="flex items-center gap-2 rounded-md border px-3 py-2">
+                                            <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                                            <span className="text-sm font-medium">{team.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Auth Log */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" /> Recent Login Activity
+                        </CardTitle>
+                        <CardDescription>Last 20 authentication attempts</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {user.auth_log_records.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No login activity recorded.</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {user.auth_log_records.map((log) => (
+                                    <div key={log.id} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+                                        <div className="flex items-center gap-3">
+                                            {log.is_denied
+                                                ? <AlertCircle className="h-4 w-4 text-destructive" />
+                                                : <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                            }
+                                            <div>
+                                                <p className="font-medium">
+                                                    {log.is_denied ? `Denied — ${log.denial_reason ?? 'unknown reason'}` : 'Successful login'}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {log.ip_address} · {log.request_method} {log.request_url}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                            {new Date(log.created_at).toLocaleString()}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </>
+    );
+}
+
+UserShow.layout = { breadcrumbs: [] };
