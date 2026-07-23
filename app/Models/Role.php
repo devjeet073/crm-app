@@ -31,7 +31,7 @@ use Illuminate\Support\Carbon;
  * @property string $mention_permission
  * @property string $user_calendar_permission
  * @property string $lock_permission
- * @property array|null $data       Per-entity CRUD ACL (e.g. {"Account":{"read":"all","create":"yes"}})
+ * @property array|null $data Per-entity CRUD ACL (e.g. {"Account":{"read":"all","create":"yes"}})
  * @property array|null $field_data Per-field ACL (e.g. {"Account":{"amount":{"read":"yes","edit":"no"}}})
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -55,7 +55,7 @@ class Role extends Model
     protected function casts(): array
     {
         return [
-            'data'       => 'array',
+            'data' => 'array',
             'field_data' => 'array',
         ];
     }

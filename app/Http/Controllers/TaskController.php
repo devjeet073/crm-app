@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
-use App\Models\User;
 use App\Picklists;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -63,7 +64,7 @@ class TaskController extends Controller
         ]);
     }
 
-    public function page(Request $request): \Illuminate\Http\JsonResponse
+    public function page(Request $request): JsonResponse
     {
         $search = $request->string('search')->toString() ?: null;
         [$sort, $direction] = $this->resolveSort($request);
@@ -139,6 +140,8 @@ class TaskController extends Controller
 
     public function edit(Task $task): Response
     {
+        $task->load('assignedUser');
+
         return Inertia::render('tasks/edit', [
             'task' => $task,
             ...$this->formProps(),
@@ -165,10 +168,10 @@ class TaskController extends Controller
         return to_route('tasks.index');
     }
 
-    public function updateStatus(Request $request, Task $task): \Illuminate\Http\JsonResponse
+    public function updateStatus(Request $request, Task $task): JsonResponse
     {
         $request->validate([
-            'status' => ['required', 'string', \Illuminate\Validation\Rule::in(Picklists::TASK_STATUSES)],
+            'status' => ['required', 'string', Rule::in(Picklists::TASK_STATUSES)],
         ]);
 
         $task->update([

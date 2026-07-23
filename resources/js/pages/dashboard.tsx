@@ -1,36 +1,231 @@
+import * as React from 'react';
 import { Head } from '@inertiajs/react';
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
-import { dashboard } from '@/routes';
+import { Building2, FileText, ListTodo, UserPlus } from 'lucide-react';
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
-export default function Dashboard() {
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+type DashboardProps = {
+    stats: {
+        accounts: number;
+        leads: number;
+        tasks: number;
+        documents: number;
+    };
+    graphData: Array<{
+        date: string;
+        leads: number;
+        accounts: number;
+        tasks: number;
+    }>;
+};
+
+const chartConfig = {
+    leads: {
+        label: 'Leads',
+        color: 'var(--chart-1)',
+    },
+    accounts: {
+        label: 'Accounts',
+        color: 'var(--chart-2)',
+    },
+    tasks: {
+        label: 'Tasks',
+        color: 'var(--chart-3)',
+    },
+} satisfies ChartConfig;
+
+export default function Dashboard({ stats, graphData = [] }: DashboardProps) {
+    const [timeRange, setTimeRange] = React.useState('90d');
+
+    const filteredData = React.useMemo(() => {
+        if (!graphData.length) return [];
+        
+        return graphData.filter((item) => {
+            const date = new Date(item.date);
+            const referenceDate = new Date(graphData[graphData.length - 1].date);
+            
+            let daysToSubtract = 90;
+            if (timeRange === '30d') {
+                daysToSubtract = 30;
+            } else if (timeRange === '7d') {
+                daysToSubtract = 7;
+            }
+            
+            const startDate = new Date(referenceDate);
+            startDate.setDate(startDate.getDate() - daysToSubtract);
+            return date >= startDate;
+        });
+    }, [graphData, timeRange]);
+
     return (
         <>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
+            <div className="flex flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+                <div className="grid auto-rows-min gap-4 md:grid-cols-4">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Accounts</CardTitle>
+                            <Building2 className="text-muted-foreground h-4 w-4" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats?.accounts || 0}</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
+                            <UserPlus className="text-muted-foreground h-4 w-4" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats?.leads || 0}</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Active Tasks</CardTitle>
+                            <ListTodo className="text-muted-foreground h-4 w-4" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats?.tasks || 0}</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Documents</CardTitle>
+                            <FileText className="text-muted-foreground h-4 w-4" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats?.documents || 0}</div>
+                        </CardContent>
+                    </Card>
                 </div>
-                <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                </div>
+                
+                <Card className="mt-4 flex-1">
+                    <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+                        <div className="grid flex-1 gap-1">
+                            <CardTitle>Activity Overview</CardTitle>
+                            <CardDescription>
+                                Showing creation activity across your CRM records
+                            </CardDescription>
+                        </div>
+                        <Select value={timeRange} onValueChange={setTimeRange}>
+                            <SelectTrigger
+                                className="hidden w-[160px] rounded-lg sm:ml-auto sm:flex"
+                                aria-label="Select a time range"
+                            >
+                                <SelectValue placeholder="Last 3 months" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                                <SelectItem value="90d" className="rounded-lg">
+                                    Last 3 months
+                                </SelectItem>
+                                <SelectItem value="30d" className="rounded-lg">
+                                    Last 30 days
+                                </SelectItem>
+                                <SelectItem value="7d" className="rounded-lg">
+                                    Last 7 days
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </CardHeader>
+                    <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+                        <ChartContainer
+                            config={chartConfig}
+                            className="aspect-auto h-[350px] w-full"
+                        >
+                            <AreaChart data={filteredData}>
+                                <defs>
+                                    <linearGradient id="fillLeads" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="var(--color-leads)" stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor="var(--color-leads)" stopOpacity={0.1} />
+                                    </linearGradient>
+                                    <linearGradient id="fillAccounts" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="var(--color-accounts)" stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor="var(--color-accounts)" stopOpacity={0.1} />
+                                    </linearGradient>
+                                    <linearGradient id="fillTasks" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="var(--color-tasks)" stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor="var(--color-tasks)" stopOpacity={0.1} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    dataKey="date"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickMargin={8}
+                                    minTickGap={32}
+                                    tickFormatter={(value) => {
+                                        const date = new Date(value);
+                                        return date.toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                        });
+                                    }}
+                                />
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={
+                                        <ChartTooltipContent
+                                            labelFormatter={(value) => {
+                                                return new Date(value).toLocaleDateString('en-US', {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                });
+                                            }}
+                                            indicator="dot"
+                                        />
+                                    }
+                                />
+                                <Area
+                                    dataKey="tasks"
+                                    type="natural"
+                                    fill="url(#fillTasks)"
+                                    stroke="var(--color-tasks)"
+                                    stackId="a"
+                                />
+                                <Area
+                                    dataKey="accounts"
+                                    type="natural"
+                                    fill="url(#fillAccounts)"
+                                    stroke="var(--color-accounts)"
+                                    stackId="a"
+                                />
+                                <Area
+                                    dataKey="leads"
+                                    type="natural"
+                                    fill="url(#fillLeads)"
+                                    stroke="var(--color-leads)"
+                                    stackId="a"
+                                />
+                                <ChartLegend content={<ChartLegendContent />} />
+                            </AreaChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
             </div>
         </>
     );
 }
-
-Dashboard.layout = {
-    breadcrumbs: [
-        {
-            title: 'Dashboard',
-            href: dashboard(),
-        },
-    ],
-};

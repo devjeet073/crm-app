@@ -101,7 +101,7 @@ export default function TeamShow({ team }: PageProps) {
                                             <div>
                                                 <p className="text-sm font-medium">{user.name}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                    {user.pivot.role ?? 'No position'} · {user.email}
+                                                    {(user as any).pivot?.role ?? 'No position'} · {user.email}
                                                 </p>
                                             </div>
                                             <Button

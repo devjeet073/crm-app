@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTeamRequest;
 use App\Http\Requests\UpdateTeamRequest;
 use App\Models\Team;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,7 +24,7 @@ class TeamController extends Controller
             ->withQueryString();
 
         return Inertia::render('teams/index', [
-            'teams'   => $teams,
+            'teams' => $teams,
             'filters' => ['search' => $search],
         ]);
     }

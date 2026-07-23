@@ -25,10 +25,12 @@ class UpdateRoleRequest extends FormRequest
             ->all();
 
         return array_merge([
-            'name'        => ['sometimes', 'required', 'string', 'max:150', Rule::unique('roles', 'name')->ignore($this->route('role'))],
+            'name' => ['sometimes', 'required', 'string', 'max:150', Rule::unique('roles', 'name')->ignore($this->route('role'))],
             'description' => ['nullable', 'string'],
-            'data'        => ['nullable', 'array'],
-            'field_data'  => ['nullable', 'array'],
+            'data' => ['nullable', 'array'],
+            'data.*' => ['nullable', 'array'],
+            'data.*.*' => ['nullable', 'string', Rule::in($levels)],
+            'field_data' => ['nullable', 'array'],
         ], $permissionRules);
     }
 }

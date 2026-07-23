@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import { format, parseISO } from 'date-fns';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import CalendarController from '@/actions/App/Http/Controllers/CalendarController';
 import Heading from '@/components/heading';
@@ -46,10 +47,7 @@ function formatTime(iso: string | null): string | null {
         return null;
     }
 
-    return new Date(iso).toLocaleTimeString(undefined, {
-        hour: 'numeric',
-        minute: '2-digit',
-    });
+    return format(parseISO(iso), 'h:mm a');
 }
 
 function eventDayKey(event: CalendarEvent): string | null {
@@ -75,14 +73,7 @@ function groupEventsByDay(events: CalendarEvent[]) {
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([dateKey, dayEvents]) => ({
             dateKey,
-            label: new Date(`${dateKey}T00:00:00`).toLocaleDateString(
-                undefined,
-                {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric',
-                },
-            ),
+            label: format(parseISO(dateKey), 'EEEE, d MMMM'),
             events: dayEvents,
         }));
 }
@@ -104,13 +95,7 @@ function navigate(from: string, to: string, offsetDays: number) {
 
 export default function CalendarIndex({ events, from, to }: PageProps) {
     const days = groupEventsByDay(events);
-    const rangeLabel = `${new Date(from).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })} – ${new Date(
-        to,
-    ).toLocaleDateString(undefined, {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-    })}`;
+    const rangeLabel = `${format(parseISO(from), 'MMMM d')} – ${format(parseISO(to), 'MMMM d, yyyy')}`;
 
     return (
         <>

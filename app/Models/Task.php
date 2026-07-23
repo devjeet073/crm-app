@@ -17,8 +17,8 @@ use Illuminate\Support\Carbon;
  * @property string $priority
  * @property Carbon|null $date_start
  * @property Carbon|null $date_end
- * @property \Illuminate\Support\Carbon|null $date_start_date
- * @property \Illuminate\Support\Carbon|null $date_end_date
+ * @property Carbon|null $date_start_date
+ * @property Carbon|null $date_end_date
  * @property Carbon|null $date_completed
  * @property string|null $description
  * @property Carbon|null $stream_updated_at

@@ -35,7 +35,7 @@ class UserFactory extends Factory
             'two_factor_confirmed_at' => null,
             'type' => 'regular',
             'is_active' => true,
-            'avatar_color' => '#' . str_pad(dechex(mt_rand(0, 0xFFFFFF)), 6, '0', STR_PAD_LEFT),
+            'avatar_color' => '#'.str_pad(dechex(mt_rand(0, 0xFFFFFF)), 6, '0', STR_PAD_LEFT),
             'title' => fake()->jobTitle(),
         ];
     }

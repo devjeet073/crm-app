@@ -3,7 +3,7 @@ import {
     Droppable,
 } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
-import { router } from '@inertiajs/react';
+
 import { Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import TaskController from '@/actions/App/Http/Controllers/TaskController';
@@ -171,11 +171,22 @@ export function KanbanBoard({
             const task = allTasks.find((t) => t.id === taskId);
 
             if (task && task.status !== newStatus) {
-                router.patch(
-                    TaskController.updateStatus.url(task),
-                    { status: newStatus },
-                    { preserveState: true, replace: true, only: [] },
-                );
+                fetch(TaskController.updateStatus.url(task), {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-XSRF-TOKEN': decodeURIComponent(
+                            document.cookie
+                                .split('; ')
+                                .find((row) => row.startsWith('XSRF-TOKEN='))
+                                ?.split('=')[1] || '',
+                        ),
+                    },
+                    body: JSON.stringify({ status: newStatus }),
+                }).catch((error) => {
+                    console.error('Failed to update task status:', error);
+                });
             }
         },
         [allTasks],

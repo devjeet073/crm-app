@@ -6,12 +6,22 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { index as rolesIndex, store as rolesStore } from '@/routes/roles';
 import type { BreadcrumbItem } from '@/types';
 
 type PageProps = {
     permissionColumns: string[];
     permissionLevels: string[];
+    crmModules: string[];
+    crudActions: string[];
 };
 
 const PERMISSION_LABELS: Record<string, string> = {
@@ -35,10 +45,17 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'New Role', href: '' },
 ];
 
-export default function RoleCreate({ permissionColumns, permissionLevels }: PageProps) {
-    const { data, setData, post, errors, processing } = useForm<Record<string, string>>({
+export default function RoleCreate({ permissionColumns, permissionLevels, crmModules, crudActions }: PageProps) {
+    const { data, setData, post, errors, processing } = useForm<any>({
         name: '',
         description: '',
+        data: crmModules.reduce((acc, mod) => {
+            acc[mod] = crudActions.reduce((actAcc, action) => {
+                actAcc[action] = 'not-set';
+                return actAcc;
+            }, {} as Record<string, string>);
+            return acc;
+        }, {} as Record<string, Record<string, string>>),
         ...Object.fromEntries(permissionColumns.map((col) => [col, 'not-set'])),
     });
 
@@ -107,6 +124,56 @@ export default function RoleCreate({ permissionColumns, permissionLevels }: Page
                                         </Select>
                                     </div>
                                 ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Module Permissions</CardTitle>
+                            <CardDescription>Set fine-grained CRUD permissions for each CRM module</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="overflow-x-auto rounded-md border">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[150px]">Module</TableHead>
+                                            {crudActions.map(action => (
+                                                <TableHead key={action} className="capitalize text-center">{action}</TableHead>
+                                            ))}
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {crmModules.map(module => (
+                                            <TableRow key={module}>
+                                                <TableCell className="font-medium">{module}</TableCell>
+                                                {crudActions.map(action => (
+                                                    <TableCell key={action} className="p-2 align-middle">
+                                                        <Select
+                                                            value={data.data[module]?.[action] || 'not-set'}
+                                                            onValueChange={(val) => {
+                                                                const newData = { ...data.data };
+                                                                if (!newData[module]) newData[module] = {};
+                                                                newData[module][action] = val;
+                                                                setData('data', newData);
+                                                            }}
+                                                        >
+                                                            <SelectTrigger className="h-8 w-full min-w-[100px]">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {permissionLevels.map(level => (
+                                                                    <SelectItem key={level} value={level}>{level}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
                             </div>
                         </CardContent>
                     </Card>

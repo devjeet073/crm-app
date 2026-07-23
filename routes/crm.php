@@ -3,6 +3,8 @@
 use App\Http\Controllers\AccessManagementController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AppSecretController;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentFolderController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TaskController;
@@ -15,8 +17,14 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'verified'])->group(function () {
     // ── User search (lightweight JSON endpoint) ─────────────────────────────
     Route::get('users/search', function (Request $request) {
-        $search  = $request->string('search')->toString() ?: null;
-        $page    = max(1, (int) $request->input('page', 1));
+        if ($id = $request->input('id')) {
+            $user = User::find($id, ['id', 'name']);
+
+            return response()->json(['users' => $user ? [$user] : [], 'hasMore' => false]);
+        }
+
+        $search = $request->string('search')->toString() ?: null;
+        $page = max(1, (int) $request->input('page', 1));
         $perPage = 20;
 
         $users = User::query()
@@ -42,6 +50,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('tasks', TaskController::class);
     Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
     Route::resource('app-secrets', AppSecretController::class);
+
+    // ── Document management ──────────────────────────────────────────────────
+    Route::delete('documents/bulk', [DocumentController::class, 'bulkDestroy'])->name('documents.bulkDestroy');
+    Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.file.download');
+    Route::resource('documents', DocumentController::class);
+    Route::resource('document-folders', DocumentFolderController::class)->except(['show']);
 
     // ── User management (admin: full CRUD; any user: own show/edit) ─────────
     Route::resource('users', UserController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);

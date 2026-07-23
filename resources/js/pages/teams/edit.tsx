@@ -17,7 +17,7 @@ export default function TeamEdit({ team }: PageProps) {
         { title: 'Edit', href: '' },
     ];
 
-    const { data, setData, patch, errors, processing } = useForm({
+    const { data, setData, patch, errors, processing, transform } = useForm({
         name: team.name,
         description: team.description ?? '',
         position_list: (team.position_list ?? []).join(', '),
@@ -25,17 +25,20 @@ export default function TeamEdit({ team }: PageProps) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        const positions = data.position_list
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean);
-        patch(teamsUpdate.url(team), {
-            data: {
-                name: data.name,
-                description: data.description,
+
+        transform((data) => {
+            const positions = data.position_list
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean);
+
+            return {
+                ...data,
                 position_list: positions.length > 0 ? positions : [],
-            },
-        } as Parameters<typeof patch>[1]);
+            } as any;
+        });
+
+        patch(teamsUpdate.url(team));
     }
 
     return (
@@ -79,6 +82,7 @@ export default function TeamEdit({ team }: PageProps) {
                                 <p className="text-xs text-muted-foreground">
                                     These labels are available when assigning users to this team.
                                 </p>
+                                {errors.position_list && <p className="text-sm text-destructive">{errors.position_list}</p>}
                             </div>
                         </CardContent>
                     </Card>

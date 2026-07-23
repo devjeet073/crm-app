@@ -6,6 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { index as rolesIndex, show as rolesShow, update as rolesUpdate } from '@/routes/roles';
 import type { BreadcrumbItem, Role } from '@/types';
 
@@ -13,6 +21,8 @@ type PageProps = {
     role: Role;
     permissionColumns: string[];
     permissionLevels: string[];
+    crmModules: string[];
+    crudActions: string[];
 };
 
 const PERMISSION_LABELS: Record<string, string> = {
@@ -31,17 +41,24 @@ const PERMISSION_LABELS: Record<string, string> = {
     lock_permission:                 'Record Lock',
 };
 
-export default function RoleEdit({ role, permissionColumns, permissionLevels }: PageProps) {
+export default function RoleEdit({ role, permissionColumns, permissionLevels, crmModules, crudActions }: PageProps) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Roles', href: rolesIndex() },
         { title: role.name, href: rolesShow.url(role) },
         { title: 'Edit', href: '' },
     ];
 
-    const { data, setData, patch, errors, processing } = useForm<Record<string, string>>({
+    const { data, setData, patch, errors, processing } = useForm<any>({
         name: role.name,
         description: role.description ?? '',
-        ...Object.fromEntries(permissionColumns.map((col) => [col, (role as Record<string, string>)[col] ?? 'not-set'])),
+        data: crmModules.reduce((acc, mod) => {
+            acc[mod] = crudActions.reduce((actAcc, action) => {
+                actAcc[action] = ((role as any).data)?.[mod]?.[action] || 'not-set';
+                return actAcc;
+            }, {} as Record<string, string>);
+            return acc;
+        }, {} as Record<string, Record<string, string>>),
+        ...Object.fromEntries(permissionColumns.map((col) => [col, (role as any)[col] ?? 'not-set'])),
     });
 
     function handleSubmit(e: React.FormEvent) {
@@ -91,6 +108,56 @@ export default function RoleEdit({ role, permissionColumns, permissionLevels }: 
                                         </Select>
                                     </div>
                                 ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Module Permissions</CardTitle>
+                            <CardDescription>Set fine-grained CRUD permissions for each CRM module</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="overflow-x-auto rounded-md border">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[150px]">Module</TableHead>
+                                            {crudActions.map(action => (
+                                                <TableHead key={action} className="capitalize text-center">{action}</TableHead>
+                                            ))}
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {crmModules.map(module => (
+                                            <TableRow key={module}>
+                                                <TableCell className="font-medium">{module}</TableCell>
+                                                {crudActions.map(action => (
+                                                    <TableCell key={action} className="p-2 align-middle">
+                                                        <Select
+                                                            value={data.data[module]?.[action] || 'not-set'}
+                                                            onValueChange={(val) => {
+                                                                const newData = { ...data.data };
+                                                                if (!newData[module]) newData[module] = {};
+                                                                newData[module][action] = val;
+                                                                setData('data', newData);
+                                                            }}
+                                                        >
+                                                            <SelectTrigger className="h-8 w-full min-w-[100px]">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {permissionLevels.map(level => (
+                                                                    <SelectItem key={level} value={level}>{level}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
                             </div>
                         </CardContent>
                     </Card>

@@ -1,7 +1,8 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     Building2,
     CalendarDays,
+    FileText,
     LayoutGrid,
     ListTodo,
     Shield,
@@ -31,7 +32,7 @@ import { index as rolesIndex } from '@/routes/roles';
 import { index as tasksIndex } from '@/routes/tasks';
 import { index as teamsIndex } from '@/routes/teams';
 import { index as usersIndex } from '@/routes/users';
-import type { NavItem } from '@/types';
+import type { NavItem, Auth } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
@@ -59,6 +60,11 @@ const mainNavItems: NavItem[] = [
         href: tasksIndex(),
         icon: ListTodo,
     },
+    {
+        title: 'Documents',
+        href: '/documents',
+        icon: FileText,
+    },
 ];
 
 const adminNavItems: NavItem[] = [
@@ -82,6 +88,20 @@ const adminNavItems: NavItem[] = [
 const footerNavItems: NavItem[] = [];
 
 export function AppSidebar() {
+    const { auth } = usePage<{ auth: Auth }>().props;
+
+    const filteredMainNavItems = mainNavItems.filter((item) => {
+        if (['Dashboard', 'Calendar'].includes(item.title)) return true;
+        if (auth.isAdmin) return true;
+        
+        if (auth.module_permissions) {
+            return auth.module_permissions[item.title] === true;
+        }
+        return false;
+    });
+
+    const filteredAdminNavItems = auth.isAdmin ? adminNavItems : [];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -97,8 +117,8 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
-                <NavMain items={adminNavItems} />
+                <NavMain items={filteredMainNavItems} />
+                {filteredAdminNavItems.length > 0 && <NavMain items={filteredAdminNavItems} />}
             </SidebarContent>
 
             <SidebarFooter>

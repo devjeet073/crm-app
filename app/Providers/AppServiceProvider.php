@@ -2,9 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\AuthLogRecord;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -32,10 +36,10 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function registerAuthLogListeners(): void
     {
-        \Illuminate\Support\Facades\Event::listen(
-            \Illuminate\Auth\Events\Login::class,
-            function (\Illuminate\Auth\Events\Login $event) {
-                \App\Models\AuthLogRecord::create([
+        Event::listen(
+            Login::class,
+            function (Login $event) {
+                AuthLogRecord::create([
                     'username' => $event->user->email,
                     'ip_address' => request()->ip(),
                     'is_denied' => false,
@@ -49,10 +53,10 @@ class AppServiceProvider extends ServiceProvider
             }
         );
 
-        \Illuminate\Support\Facades\Event::listen(
-            \Illuminate\Auth\Events\Failed::class,
-            function (\Illuminate\Auth\Events\Failed $event) {
-                \App\Models\AuthLogRecord::create([
+        Event::listen(
+            Failed::class,
+            function (Failed $event) {
+                AuthLogRecord::create([
                     'username' => $event->credentials['email'] ?? ($event->user?->email ?? null),
                     'ip_address' => request()->ip(),
                     'is_denied' => true,

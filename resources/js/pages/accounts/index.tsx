@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Download, Pencil, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import AccountController from '@/actions/App/Http/Controllers/AccountController';
 import { AccountDrawer } from '@/components/accounts/account-drawer';
 import type { AccountDrawerState } from '@/components/accounts/account-drawer';
@@ -117,6 +117,30 @@ export default function AccountsIndex({
             onFinish: () => setSelectedAccounts([]),
         });
     }
+
+    const handleKeyDown = useCallback(
+        (e: KeyboardEvent) => {
+            if (e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
+                return;
+            }
+
+            const tag = (e.target as HTMLElement)?.tagName;
+
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+                return;
+            }
+
+            e.preventDefault();
+            setDrawer({ mode: 'create' });
+        },
+        [],
+    );
+
+    useEffect(() => {
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [handleKeyDown]);
 
     const columns = useMemo<ColumnDef<Account>[]>(
         () => [
@@ -280,6 +304,9 @@ export default function AccountsIndex({
 
                         <Button onClick={() => setDrawer({ mode: 'create' })}>
                             New account
+                            <kbd className="ml-2 hidden items-center gap-1 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                                <span className="text-xs">N</span>
+                            </kbd>
                         </Button>
                     </div>
                 </div>

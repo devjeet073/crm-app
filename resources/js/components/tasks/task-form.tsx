@@ -9,11 +9,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
+import { DatePicker } from '@/components/ui/date-picker';
 import {
     Select,
     SelectContent,
@@ -141,113 +137,21 @@ export default function TaskForm({
 
                     <div className="grid gap-2">
                         <Label htmlFor="date_start">Start date</Label>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    id="date_start"
-                                    variant="outline"
-                                    className={cn(
-                                        'w-full justify-start text-left font-normal',
-                                        !data.date_start &&
-                                            'text-muted-foreground',
-                                    )}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {data.date_start ? (
-                                        format(
-                                            new Date(data.date_start),
-                                            'PPP',
-                                        )
-                                    ) : (
-                                        <span>Pick a date</span>
-                                    )}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                                className="w-auto p-0"
-                                align="start"
-                            >
-                                <Calendar
-                                    mode="single"
-                                    selected={
-                                        data.date_start
-                                            ? new Date(data.date_start)
-                                            : undefined
-                                    }
-                                    onSelect={(selected) =>
-                                        setData(
-                                            'date_start',
-                                            selected
-                                                ? format(
-                                                      selected,
-                                                      'yyyy-MM-dd',
-                                                  )
-                                                : '',
-                                        )
-                                    }
-                                />
-                            </PopoverContent>
-                        </Popover>
+                        <DatePicker
+                            id="date_start"
+                            value={data.date_start}
+                            onChange={(date) => setData('date_start', date)}
+                        />
                         <InputError message={errors.date_start} />
                     </div>
 
                     <div className="grid gap-2">
                         <Label htmlFor="date_end">Due date</Label>
-                        {/* <Input
+                        <DatePicker
                             id="date_end"
-                            type="datetime-local"
                             value={data.date_end}
-                            onChange={(e) => setData('date_end', e.target.value)}
-                        /> */}
-
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    id="date_end"
-                                    variant="outline"
-                                    className={cn(
-                                        'w-full justify-start text-left font-normal',
-                                        !data.date_end &&
-                                            'text-muted-foreground',
-                                    )}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {data.date_end ? (
-                                        format(
-                                            new Date(data.date_end),
-                                            'PPP',
-                                        )
-                                    ) : (
-                                        <span>Pick a date</span>
-                                    )}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                                className="w-auto p-0"
-                                align="start"
-                            >
-                                <Calendar
-                                    mode="single"
-                                    captionLayout='dropdown'
-                                    selected={
-                                        data.date_end
-                                            ? new Date(data.date_end)
-                                            : undefined
-                                    }
-                                    onSelect={(selected) =>
-                                        setData(
-                                            'date_end',
-                                            selected
-                                                ? format(
-                                                      selected,
-                                                      'yyyy-MM-dd',
-                                                  )
-                                                : '',
-                                        )
-                                    }
-                                />
-                            </PopoverContent>
-                        </Popover>
+                            onChange={(date) => setData('date_end', date)}
+                        />
                         <InputError message={errors.date_end} />
                     </div>
 
@@ -257,6 +161,7 @@ export default function TaskForm({
                         <UserCombobox
                             id="assigned_user_id"
                             value={data.assigned_user_id}
+                            initialUser={task?.assigned_user}
                             onChange={(userId) =>
                                 setData('assigned_user_id', userId)
                             }

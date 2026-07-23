@@ -14,6 +14,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import UserCombobox from '@/components/user-combobox';
 import type { Lead, User } from '@/types';
 
 type LeadFormData = {
@@ -205,29 +206,14 @@ export default function LeadForm({
 
                     <div className="grid gap-2">
                         <Label htmlFor="assigned_user_id">Assigned user</Label>
-                        <Select
+                        <UserCombobox
+                            id="assigned_user_id"
                             value={data.assigned_user_id}
-                            onValueChange={(value) =>
-                                setData('assigned_user_id', value)
+                            initialUser={lead?.assigned_user}
+                            onChange={(userId) =>
+                                setData('assigned_user_id', userId)
                             }
-                        >
-                            <SelectTrigger
-                                id="assigned_user_id"
-                                className="w-full"
-                            >
-                                <SelectValue placeholder="Unassigned" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {users.map((user) => (
-                                    <SelectItem
-                                        key={user.id}
-                                        value={String(user.id)}
-                                    >
-                                        {user.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        />
                         <InputError message={errors.assigned_user_id} />
                     </div>
                 </CardContent>

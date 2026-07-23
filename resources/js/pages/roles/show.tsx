@@ -13,6 +13,10 @@ import type { BreadcrumbItem, Role, CrmUser, Team } from '@/types';
 
 type PageProps = {
     role: Role & { users: CrmUser[]; teams: Team[] };
+    permissionColumns: string[];
+    permissionLevels: string[];
+    crmModules: string[];
+    crudActions: string[];
 };
 
 const PERMISSION_COLORS: Record<string, string> = {
@@ -40,7 +44,7 @@ const PERMISSION_LABELS: Record<string, string> = {
     lock_permission:                 'Record Lock',
 };
 
-export default function RoleShow({ role }: PageProps) {
+export default function RoleShow({ role, crmModules, crudActions }: PageProps) {
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Roles', href: rolesIndex() },
         { title: role.name, href: '' },
@@ -102,7 +106,7 @@ export default function RoleShow({ role }: PageProps) {
                         <CardContent>
                             <div className="grid grid-cols-2 gap-2">
                                 {Object.entries(PERMISSION_LABELS).map(([key, label]) => {
-                                    const val = (role as Record<string, string>)[key] ?? 'not-set';
+                                    const val = (role as any)[key] ?? 'not-set';
                                     return (
                                         <div key={key} className="flex items-center justify-between gap-2 rounded-md border px-3 py-1.5 text-sm">
                                             <span className="text-muted-foreground">{label}</span>
@@ -123,24 +127,35 @@ export default function RoleShow({ role }: PageProps) {
                             <CardDescription>Per-entity CRUD permission levels</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {role.data && Object.keys(role.data).length > 0 ? (
-                                <div className="space-y-2">
-                                    {Object.entries(role.data).map(([entity, perms]) => (
-                                        <div key={entity} className="rounded-md border p-3">
-                                            <p className="mb-2 text-sm font-medium">{entity}</p>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {Object.entries(perms).map(([action, level]) => (
-                                                    <Badge key={action} variant="outline" className="text-xs">
-                                                        {action}: <span className="ml-1 font-semibold">{level}</span>
-                                                    </Badge>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">No entity ACL defined.</p>
-                            )}
+                            <div className="overflow-x-auto rounded-md border">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[150px]">Module</TableHead>
+                                            {crudActions.map(action => (
+                                                <TableHead key={action} className="capitalize text-center">{action}</TableHead>
+                                            ))}
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {crmModules.map(module => (
+                                            <TableRow key={module}>
+                                                <TableCell className="font-medium">{module}</TableCell>
+                                                {crudActions.map(action => {
+                                                    const val = ((role as any).data)?.[module]?.[action] || 'not-set';
+                                                    return (
+                                                        <TableCell key={action} className="text-center p-2">
+                                                            <Badge variant={PERMISSION_COLORS[val] as any}>
+                                                                {val}
+                                                            </Badge>
+                                                        </TableCell>
+                                                    );
+                                                })}
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>

@@ -12,6 +12,8 @@ export type User = {
 
 export type Auth = {
     user: User;
+    isAdmin: boolean;
+    module_permissions: Record<string, boolean> | null;
 };
 
 /* @chisel-passkeys */

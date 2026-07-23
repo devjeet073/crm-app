@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property string $name
- * @property array|null $position_list  List of valid position labels for team_user.role
+ * @property array|null $position_list List of valid position labels for team_user.role
  * @property string|null $description
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at

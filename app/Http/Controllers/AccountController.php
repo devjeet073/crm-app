@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreAccountRequest;
 use App\Http\Requests\UpdateAccountRequest;
 use App\Models\Account;
-use App\Models\User;
 use App\Picklists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -85,6 +84,8 @@ class AccountController extends Controller
 
     public function edit(Account $account): Response
     {
+        $account->load('assignedUser');
+
         return Inertia::render('accounts/edit', [
             'account' => $account,
             ...$this->formProps(),

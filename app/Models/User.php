@@ -21,7 +21,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property int $id
  * @property string $name
  * @property string $email
- * @property string $type  regular|admin|portal|api|system
+ * @property string $type regular|admin|portal|api|system
  * @property bool $is_active
  * @property string|null $title
  * @property string|null $avatar_color
@@ -55,10 +55,10 @@ class User extends Authenticatable implements PasskeyUser
     protected function casts(): array
     {
         return [
-            'email_verified_at'       => 'datetime',
-            'password'                => 'hashed',
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
-            'is_active'               => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -75,7 +75,7 @@ class User extends Authenticatable implements PasskeyUser
         $levels = ['not-set', 'no', 'own', 'team', 'yes', 'all'];
 
         $directRoles = $this->roles()->get();
-        $teamRoles   = Role::whereHas('teams', fn ($q) => $q->whereHas('users', fn ($q) => $q->where('users.id', $this->id)))->get();
+        $teamRoles = Role::whereHas('teams', fn ($q) => $q->whereHas('users', fn ($q) => $q->where('users.id', $this->id)))->get();
 
         $best = 'not-set';
         foreach ($directRoles->merge($teamRoles) as $role) {
@@ -86,6 +86,37 @@ class User extends Authenticatable implements PasskeyUser
         }
 
         return $best;
+    }
+
+    /** Resolve all effective permission levels for a specific module's CRUD action. */
+    public function effectiveModulePermission(string $module, string $action = 'view'): string
+    {
+        $levels = ['not-set', 'no', 'own', 'team', 'yes', 'all'];
+
+        $directRoles = $this->roles()->get();
+        $teamRoles = Role::whereHas('teams', fn ($q) => $q->whereHas('users', fn ($q) => $q->where('users.id', $this->id)))->get();
+
+        $best = 'not-set';
+        foreach ($directRoles->merge($teamRoles) as $role) {
+            $val = $role->data[$module][$action] ?? 'not-set';
+            if (array_search($val, $levels) > array_search($best, $levels)) {
+                $best = $val;
+            }
+        }
+
+        return $best;
+    }
+
+    /** Check if user can view a specific module */
+    public function canViewModule(string $module): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $level = $this->effectiveModulePermission($module, 'view');
+
+        return in_array($level, ['own', 'team', 'yes', 'all'], true);
     }
 
     // ── Activity relationships ─────────────────────────────────────────────

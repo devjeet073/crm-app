@@ -21,17 +21,17 @@ class UpdateUserRequest extends FormRequest
         $isAdmin = $this->user()?->isAdmin();
 
         return [
-            'name'            => ['sometimes', 'required', 'string', 'max:100'],
-            'email'           => ['sometimes', 'required', 'email', Rule::unique('users', 'email')->ignore($this->route('user'))],
-            'title'           => ['nullable', 'string', 'max:100'],
+            'name' => ['sometimes', 'required', 'string', 'max:100'],
+            'email' => ['sometimes', 'required', 'email', Rule::unique('users', 'email')->ignore($this->route('user'))],
+            'title' => ['nullable', 'string', 'max:100'],
             'salutation_name' => ['nullable', 'string', 'max:20'],
-            'middle_name'     => ['nullable', 'string', 'max:100'],
-            'gender'          => ['nullable', Rule::in(['Male', 'Female', 'Other'])],
-            'avatar_color'    => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'middle_name' => ['nullable', 'string', 'max:100'],
+            'gender' => ['nullable', Rule::in(['Male', 'Female', 'Other'])],
+            'avatar_color' => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'default_team_id' => ['nullable', 'exists:teams,id'],
 
             // Admin-only fields
-            'type'      => $isAdmin ? ['sometimes', 'required', Rule::in(['regular', 'admin', 'portal', 'api'])] : ['prohibited'],
+            'type' => $isAdmin ? ['sometimes', 'required', Rule::in(['regular', 'admin', 'portal', 'api'])] : ['prohibited'],
             'is_active' => $isAdmin ? ['sometimes', 'boolean'] : ['prohibited'],
         ];
     }

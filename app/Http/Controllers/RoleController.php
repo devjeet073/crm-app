@@ -24,7 +24,7 @@ class RoleController extends Controller
             ->withQueryString();
 
         return Inertia::render('roles/index', [
-            'roles'   => $roles,
+            'roles' => $roles,
             'filters' => ['search' => $search],
         ]);
     }
@@ -50,6 +50,7 @@ class RoleController extends Controller
 
         return Inertia::render('roles/show', [
             'role' => $role,
+            ...$this->formProps(),
         ]);
     }
 
@@ -86,7 +87,9 @@ class RoleController extends Controller
     {
         return [
             'permissionColumns' => Role::permissionColumns(),
-            'permissionLevels'  => Role::permissionLevels(),
+            'permissionLevels' => Role::permissionLevels(),
+            'crmModules' => ['Accounts', 'Contacts', 'Leads', 'Tasks', 'Documents', 'Teams', 'Users'],
+            'crudActions' => ['view', 'insert', 'update', 'delete'],
         ];
     }
 }

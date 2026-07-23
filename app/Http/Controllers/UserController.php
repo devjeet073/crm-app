@@ -15,14 +15,14 @@ class UserController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->string('search')->toString() ?: null;
-        $type   = $request->string('type')->toString() ?: null;
+        $type = $request->string('type')->toString() ?: null;
 
         $users = User::query()
             ->with('defaultTeam')
             ->withCount(['roles', 'teams'])
             ->when($search, fn ($q, $s) => $q->where(function ($q) use ($s) {
                 $q->where('name', 'like', "%{$s}%")
-                  ->orWhere('email', 'like', "%{$s}%");
+                    ->orWhere('email', 'like', "%{$s}%");
             }))
             ->when($type, fn ($q, $t) => $q->where('type', $t))
             ->orderBy('name')
@@ -30,9 +30,9 @@ class UserController extends Controller
             ->withQueryString();
 
         return Inertia::render('users/index', [
-            'users'   => $users,
+            'users' => $users,
             'filters' => ['search' => $search, 'type' => $type],
-            'types'   => ['regular', 'admin', 'portal', 'api'],
+            'types' => ['regular', 'admin', 'portal', 'api'],
         ]);
     }
 
@@ -50,7 +50,7 @@ class UserController extends Controller
         $teams = Team::orderBy('name')->get(['id', 'name']);
 
         return Inertia::render('users/edit', [
-            'user'  => $user->load(['roles', 'teams']),
+            'user' => $user->load(['roles', 'teams']),
             'teams' => $teams,
             'types' => ['regular', 'admin', 'portal', 'api'],
         ]);

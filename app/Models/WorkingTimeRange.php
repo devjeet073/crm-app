@@ -15,8 +15,8 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string|null $name
  * @property string|null $time_ranges
- * @property \Illuminate\Support\Carbon|null $date_start
- * @property \Illuminate\Support\Carbon|null $date_end
+ * @property Carbon|null $date_start
+ * @property Carbon|null $date_end
  * @property string $type
  * @property string|null $description
  * @property int|null $created_by_id

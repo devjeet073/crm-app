@@ -25,10 +25,12 @@ class StoreRoleRequest extends FormRequest
             ->all();
 
         return array_merge([
-            'name'        => ['required', 'string', 'max:150', 'unique:roles,name'],
+            'name' => ['required', 'string', 'max:150', 'unique:roles,name'],
             'description' => ['nullable', 'string'],
-            'data'        => ['nullable', 'array'],
-            'field_data'  => ['nullable', 'array'],
+            'data' => ['nullable', 'array'],
+            'data.*' => ['nullable', 'array'],
+            'data.*.*' => ['nullable', 'string', Rule::in($levels)],
+            'field_data' => ['nullable', 'array'],
         ], $permissionRules);
     }
 }

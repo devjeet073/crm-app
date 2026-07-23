@@ -122,6 +122,7 @@ export default function AccountForm({
                         <UserCombobox
                             id="assigned_user_id"
                             value={data.assigned_user_id}
+                            initialUser={account?.assigned_user}
                             onChange={(userId) =>
                                 setData('assigned_user_id', userId)
                             }

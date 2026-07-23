@@ -1,5 +1,53 @@
 import type { User } from './auth';
 
+export type DocumentFolder = {
+    id: string;
+    name: string | null;
+    description: string | null;
+    parent_id: string | null;
+    parent?: DocumentFolder | null;
+    documents_count?: number;
+    created_by?: User | null;
+    created_at: string;
+    updated_at: string;
+};
+
+export type CrmFile = {
+    id: string;
+    name: string;
+    original_name: string;
+    mime_type: string;
+    size: number;
+    size_for_humans: string;
+    disk: string;
+    path: string;
+    uploaded_by_id: string | null;
+    download_url: string;
+    created_at: string;
+    updated_at: string;
+};
+
+export type Document = {
+    id: string;
+    name: string | null;
+    status: string;
+    type: string | null;
+    publish_date: string | null;
+    expiration_date: string | null;
+    description: string | null;
+    file_id: string | null;
+    file?: CrmFile | null;
+    folder_id: string | null;
+    folder?: DocumentFolder | null;
+    assigned_user_id: string | null;
+    assigned_user?: User | null;
+    created_by?: User | null;
+    leads_count?: number;
+    accounts_count?: number;
+    created_at: string;
+    updated_at: string;
+};
+
 export type Account = {
     id: number;
     name: string | null;

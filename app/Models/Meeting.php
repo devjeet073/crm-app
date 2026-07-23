@@ -23,8 +23,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $uid
  * @property string|null $join_url
  * @property string|null $external_service
- * @property \Illuminate\Support\Carbon|null $date_start_date
- * @property \Illuminate\Support\Carbon|null $date_end_date
+ * @property Carbon|null $date_start_date
+ * @property Carbon|null $date_end_date
  * @property Carbon|null $stream_updated_at
  * @property int|null $parent_id
  * @property string|null $parent_type

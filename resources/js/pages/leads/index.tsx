@@ -2,7 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Download, Pencil, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import LeadController from '@/actions/App/Http/Controllers/LeadController';
 import { DataTable, DataTableColumnHeader } from '@/components/data-table';
 import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
@@ -136,6 +136,30 @@ export default function LeadsIndex({
             onFinish: () => setSelectedLeads([]),
         });
     }
+
+    const handleKeyDown = useCallback(
+        (e: KeyboardEvent) => {
+            if (e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
+                return;
+            }
+
+            const tag = (e.target as HTMLElement)?.tagName;
+
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+                return;
+            }
+
+            e.preventDefault();
+            setDrawer({ mode: 'create' });
+        },
+        [],
+    );
+
+    useEffect(() => {
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [handleKeyDown]);
 
     const columns = useMemo<ColumnDef<Lead>[]>(
         () => [
@@ -301,6 +325,9 @@ export default function LeadsIndex({
 
                         <Button onClick={() => setDrawer({ mode: 'create' })}>
                             New lead
+                            <kbd className="ml-2 hidden items-center gap-1 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                                <span className="text-xs">N</span>
+                            </kbd>
                         </Button>
                     </div>
                 </div>

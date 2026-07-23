@@ -14,25 +14,28 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function TeamCreate() {
-    const { data, setData, post, errors, processing } = useForm({
+    const { data, setData, post, errors, processing, transform } = useForm({
         name: '',
         description: '',
-        position_list: '' as string, // comma-separated, converted on submit
+        position_list: '', // comma-separated, converted on submit
     });
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        const positions = data.position_list
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean);
-        post(teamsStore.url(), {
-            data: {
-                name: data.name,
-                description: data.description,
+
+        transform((data) => {
+            const positions = data.position_list
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean);
+
+            return {
+                ...data,
                 position_list: positions.length > 0 ? positions : undefined,
-            },
-        } as Parameters<typeof post>[1]);
+            } as any;
+        });
+
+        post(teamsStore.url());
     }
 
     return (
@@ -78,6 +81,7 @@ export default function TeamCreate() {
                                 <p className="text-xs text-muted-foreground">
                                     Position labels members can be assigned within this team.
                                 </p>
+                                {errors.position_list && <p className="text-sm text-destructive">{errors.position_list}</p>}
                             </div>
                         </CardContent>
                     </Card>

@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\User;
+use App\Models\AuthLogRecord;
 use App\Models\Role;
 use App\Models\Team;
-use App\Models\AuthLogRecord;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -16,7 +16,7 @@ beforeEach(function () {
 
 test('admin middleware restricts regular users', function () {
     $regularUser = User::factory()->create(['type' => 'regular']);
-    $adminUser   = User::factory()->create(['type' => 'admin']);
+    $adminUser = User::factory()->create(['type' => 'admin']);
 
     $role = Role::create(['name' => 'Test Role']);
 
@@ -66,7 +66,7 @@ test('roles and teams assign/revoke endpoints work', function () {
 
 test('effective permissions resolver handles priority hierarchy', function () {
     $user = User::factory()->create();
-    
+
     // Create direct role (low priority)
     $lowRole = Role::create([
         'name' => 'Low Role',
@@ -103,7 +103,7 @@ test('login audit logger logs success and failures', function () {
 
     // If it fails or redirects, let's debug the response if the log is empty
     $successLog = AuthLogRecord::where('username', 'audit-test@example.com')->first();
-    if (!$successLog) {
+    if (! $successLog) {
         ray($response->status(), $response->content());
     }
 

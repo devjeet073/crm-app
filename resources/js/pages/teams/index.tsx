@@ -1,6 +1,6 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import { Plus, Users, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
@@ -21,16 +21,47 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: 'Teams', href: teamsIndex() }];
 export default function TeamsIndex({ teams, filters }: PageProps) {
     const [search, setSearch] = useState(filters.search ?? '');
 
-    useEffect(() => { setSearch(filters.search ?? ''); }, [filters.search]);
+    useEffect(() => {
+ setSearch(filters.search ?? ''); 
+}, [filters.search]);
 
     useEffect(() => {
         const next = search.trim();
-        if (next === (filters.search ?? '')) return;
+
+        if (next === (filters.search ?? '')) {
+return;
+}
+
         const t = window.setTimeout(() => {
             router.get(teamsIndex.url(), { search: next || undefined }, { preserveState: true, replace: true });
         }, 350);
+
         return () => window.clearTimeout(t);
     }, [search, filters.search]);
+
+    const handleKeyDown = useCallback(
+        (e: KeyboardEvent) => {
+            if (e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
+                return;
+            }
+
+            const tag = (e.target as HTMLElement)?.tagName;
+
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+                return;
+            }
+
+            e.preventDefault();
+            router.visit(teamsCreate.url());
+        },
+        [],
+    );
+
+    useEffect(() => {
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [handleKeyDown]);
 
     return (
         <>
@@ -46,6 +77,9 @@ export default function TeamsIndex({ teams, filters }: PageProps) {
                         <Button asChild>
                             <a href={teamsCreate.url()}>
                                 <Plus className="mr-1.5 h-4 w-4" /> New team
+                                <kbd className="ml-2 hidden items-center gap-1 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                                    <span className="text-xs">N</span>
+                                </kbd>
                             </a>
                         </Button>
                     </div>

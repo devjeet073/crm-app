@@ -70,7 +70,7 @@ class AccessManagementController extends Controller
     {
         $request->validate([
             'user_id' => ['required', 'exists:users,id'],
-            'role'    => ['nullable', 'string', 'max:100'],
+            'role' => ['nullable', 'string', 'max:100'],
         ]);
 
         $team->users()->syncWithoutDetaching([

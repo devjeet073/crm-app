@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreLeadRequest;
 use App\Http\Requests\UpdateLeadRequest;
 use App\Models\Lead;
-use App\Models\User;
 use App\Picklists;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -92,6 +91,8 @@ class LeadController extends Controller
 
     public function edit(Lead $lead): Response
     {
+        $lead->load('assignedUser');
+
         return Inertia::render('leads/edit', [
             'lead' => $lead,
             ...$this->formProps(),
@@ -142,7 +143,6 @@ class LeadController extends Controller
     private function formProps(): array
     {
         return [
-            'users' => User::orderBy('name')->get(['id', 'name']),
             'statuses' => Picklists::LEAD_STATUSES,
             'sources' => Picklists::LEAD_SOURCES,
             'industries' => Picklists::INDUSTRIES,

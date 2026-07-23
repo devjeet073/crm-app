@@ -30,6 +30,20 @@ final class Picklists
 
     public const SALUTATIONS = ['Mr.', 'Ms.', 'Mrs.', 'Dr.'];
 
+    public const DOCUMENT_STATUSES = ['Active', 'Draft', 'Expired', 'Archived'];
+
+    public const DOCUMENT_TYPES = [
+        'Contract', 'NDA', 'Proposal', 'Invoice', 'Report',
+        'Presentation', 'Spreadsheet', 'Image', 'Other',
+    ];
+
+    public const DOCUMENT_ALLOWED_MIME_TYPES = [
+        'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+        'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg',
+        'txt', 'csv', 'rtf',
+        'zip', 'rar', '7z',
+    ];
+
     public const TASK_STATUSES = ['Not Started', 'Started', 'Completed'];
 
     public const TASK_PRIORITIES = ['Low', 'Normal', 'High', 'Urgent'];
