@@ -311,7 +311,7 @@ export default function AccountsIndex({
                     </div>
                 </div>
 
-                <DataTable
+                <DataTable tableId="accounts-index-table"
                     columns={columns}
                     data={accounts.data}
                     emptyMessage="No accounts found."

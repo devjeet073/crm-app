@@ -155,6 +155,7 @@ export default function UsersIndex({ users, filters, filterOptions }: PageProps)
                 />
 
                 <DataTable
+                    tableId="users-table"
                     columns={columns}
                     data={users.data}
                     emptyMessage="No users found."

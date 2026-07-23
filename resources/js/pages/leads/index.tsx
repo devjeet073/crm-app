@@ -332,7 +332,7 @@ export default function LeadsIndex({
                     </div>
                 </div>
 
-                <DataTable
+                <DataTable tableId="leads-index-table"
                     columns={columns}
                     data={leads.data}
                     emptyMessage="No leads found."

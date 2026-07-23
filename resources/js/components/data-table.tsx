@@ -8,6 +8,7 @@ import type {
     Column,
     ColumnDef,
     ColumnFiltersState,
+    ColumnSizingState,
     RowSelectionState,
     Table as TanstackTable,
     VisibilityState,
@@ -106,6 +107,7 @@ type DataTableProps<TData, TValue> = {
     enableRowSelection?: boolean;
     onSelectedRowsChange?: (rows: TData[]) => void;
     bulkActions?: React.ReactNode;
+    tableId?: string;
 };
 
 export function DataTable<TData, TValue>({
@@ -119,12 +121,24 @@ export function DataTable<TData, TValue>({
     enableRowSelection = false,
     onSelectedRowsChange,
     bulkActions,
+    tableId,
 }: DataTableProps<TData, TValue>) {
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
         {},
     );
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+    const [columnSizing, setColumnSizing] = useState<ColumnSizingState>(() => {
+        if (!tableId) return {};
+        const saved = localStorage.getItem(`table_sizing_${tableId}`);
+        return saved ? JSON.parse(saved) : {};
+    });
+
+    useEffect(() => {
+        if (tableId && Object.keys(columnSizing).length > 0) {
+            localStorage.setItem(`table_sizing_${tableId}`, JSON.stringify(columnSizing));
+        }
+    }, [columnSizing, tableId]);
 
     useEffect(() => {
         setRowSelection({});
@@ -193,6 +207,9 @@ export function DataTable<TData, TValue>({
 
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
+        enableColumnResizing: true,
+        columnResizeMode: 'onChange',
+        onColumnSizingChange: setColumnSizing,
         meta: {
             sort,
             direction,
@@ -202,6 +219,7 @@ export function DataTable<TData, TValue>({
             columnFilters,
             columnVisibility,
             rowSelection,
+            columnSizing,
         },
     });
 
@@ -270,13 +288,16 @@ export function DataTable<TData, TValue>({
                 </div>
             )}
 
-            <div className="overflow-hidden rounded-xl border">
-                <Table>
+            <div className="overflow-auto rounded-xl border relative w-full">
+                <Table style={{ tableLayout: 'fixed', width: table.getTotalSize(), minWidth: '100%' }}>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id}>
+                                    <TableHead 
+                                        key={header.id}
+                                        style={{ width: header.getSize(), position: 'relative' }}
+                                    >
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(
@@ -284,6 +305,16 @@ export function DataTable<TData, TValue>({
                                                       .header,
                                                   header.getContext(),
                                               )}
+                                        {header.column.getCanResize() && (
+                                            <div
+                                                onMouseDown={header.getResizeHandler()}
+                                                onTouchStart={header.getResizeHandler()}
+                                                onDoubleClick={() => header.column.resetSize()}
+                                                className={`absolute right-0 top-0 h-full w-1.5 cursor-col-resize select-none touch-none hover:bg-primary/50 ${
+                                                    header.column.getIsResizing() ? 'bg-primary' : 'bg-border/50'
+                                                }`}
+                                            />
+                                        )}
                                     </TableHead>
                                 ))}
                             </TableRow>
@@ -294,7 +325,10 @@ export function DataTable<TData, TValue>({
                             table.getRowModel().rows.map((row) => (
                                 <TableRow key={row.id}>
                                     {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
+                                        <TableCell 
+                                            key={cell.id}
+                                            style={{ width: cell.column.getSize() }}
+                                        >
                                             {flexRender(
                                                 cell.column.columnDef.cell,
                                                 cell.getContext(),

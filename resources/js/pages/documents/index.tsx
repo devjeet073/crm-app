@@ -330,7 +330,7 @@ return;
                     </div>
                 </div>
 
-                <DataTable
+                <DataTable tableId="documents-index-table"
                     columns={columns}
                     data={documents.data}
                     emptyMessage="No documents found."

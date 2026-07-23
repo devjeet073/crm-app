@@ -12,7 +12,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { dashboard } from '@/routes/index';
 import type { NavGroup, NavItem, Auth } from '@/types';
 
 const footerNavItems: NavItem[] = [];

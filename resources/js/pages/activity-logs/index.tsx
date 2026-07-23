@@ -132,7 +132,7 @@ export default function ActivityLogsIndex({ logs, filters, options }: any) {
                     </div>
                 </div>
 
-                <DataTable columns={columns} data={logs.data} emptyMessage="No activity logs found." />
+                <DataTable tableId="activity-logs-index-table" columns={columns} data={logs.data} emptyMessage="No activity logs found." />
                 
                 <Pagination links={logs.links} />
             </div>

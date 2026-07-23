@@ -362,7 +362,7 @@ export default function TasksIndex({
                     />
                 ) : (
                     <>
-                        <DataTable
+                        <DataTable tableId="tasks-index-table"
                             columns={columns}
                             data={isPaginated(tasks) ? tasks.data : []}
                             emptyMessage="No tasks found."

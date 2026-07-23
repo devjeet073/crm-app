@@ -8,6 +8,11 @@ import { defineConfig } from 'vite';
 import { FontaineTransform } from 'fontaine';
 
 export default defineConfig({
+    resolve: {
+        alias: {
+            '@': '/resources/js',
+        },
+    },
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],

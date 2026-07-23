@@ -122,7 +122,7 @@ export default function DocumentFoldersIndex({ folders }: PageProps) {
                     </Button>
                 </div>
 
-                <DataTable
+                <DataTable tableId="folders-index-table"
                     columns={columns}
                     data={folders.data}
                     emptyMessage="No folders found."
