@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\AccessManagementController;
 use App\Http\Controllers\AccountController;
-use App\Http\Controllers\AppSecretController;
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentFolderController;
+use App\Http\Controllers\EmailConfigurationController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\TaskController;
@@ -49,8 +50,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('tasks/page', [TaskController::class, 'page'])->name('tasks.page');
     Route::resource('tasks', TaskController::class);
     Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
-    Route::resource('app-secrets', AppSecretController::class);
-
     // ── Document management ──────────────────────────────────────────────────
     Route::delete('documents/bulk', [DocumentController::class, 'bulkDestroy'])->name('documents.bulkDestroy');
     Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.file.download');
@@ -60,10 +59,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ── User management (admin: full CRUD; any user: own show/edit) ─────────
     Route::resource('users', UserController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
 
-    // ── Admin-only: Roles & Teams ───────────────────────────────────────────
+    // ── Admin-only: Roles, Teams, Email Configurations ──────────────────────
     Route::middleware('admin')->group(function () {
+        Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
         Route::resource('roles', RoleController::class);
         Route::resource('teams', TeamController::class);
+        Route::resource('email-configurations', EmailConfigurationController::class);
 
         // Access management: role ↔ user
         Route::post('roles/{role}/assign-user', [AccessManagementController::class, 'assignRoleToUser'])

@@ -1,5 +1,4 @@
 import { Head, router } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useMemo } from 'react';
 import { CheckCircle2, XCircle, Trash2 } from 'lucide-react';
@@ -9,15 +8,14 @@ import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { index as usersIndex, show as usersShow, destroy as usersDestroy } from '@/routes/users';
 import type { BreadcrumbItem, CrmUser, Paginated } from '@/types';
+import { AdvancedFilter, FilterField } from '@/components/advanced-filter';
 
 type PageProps = {
     users: Paginated<CrmUser>;
-    filters: { search: string | null; type: string | null };
-    types: string[];
+    filters: Record<string, any>;
+    filterOptions: Record<string, any[]>;
 };
 
 const TYPE_BADGE: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -30,27 +28,23 @@ const TYPE_BADGE: Record<string, 'default' | 'secondary' | 'outline' | 'destruct
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Users', href: usersIndex() }];
 
-export default function UsersIndex({ users, filters, types }: PageProps) {
-    const [search, setSearch] = useState(filters.search ?? '');
-    const [type,   setType]   = useState(filters.type   ?? '');
+export default function UsersIndex({ users, filters, filterOptions }: PageProps) {
+    
+    const availableFields: FilterField[] = [
+        { name: 'name', label: 'Name', type: 'text' },
+        { name: 'email', label: 'Email', type: 'text' },
+        { name: 'type', label: 'Type', type: 'select', options: filterOptions.types || [] },
+        { name: 'is_active', label: 'Status', type: 'select', options: [{label: 'Active', value: '1'}, {label: 'Inactive', value: '0'}] },
+        { name: 'created_at', label: 'Created At', type: 'date' },
+    ];
 
-    useEffect(() => { setSearch(filters.search ?? ''); }, [filters.search]);
-    useEffect(() => { setType(filters.type     ?? ''); }, [filters.type]);
-
-    // debounced search
-    useEffect(() => {
-        const next = search.trim();
-        if (next === (filters.search ?? '')) return;
-        const t = window.setTimeout(() => {
-            router.get(usersIndex.url(), { search: next || undefined, type: type || undefined }, { preserveState: true, replace: true });
-        }, 350);
-        return () => window.clearTimeout(t);
-    }, [search, filters.search, type]);
-
-    function handleTypeChange(val: string) {
-        setType(val);
-        router.get(usersIndex.url(), { search: search.trim() || undefined, type: val || undefined }, { preserveState: true, replace: true });
-    }
+    const handleApplyFilters = (newFilters: any) => {
+        router.get(usersIndex.url(), newFilters, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
 
     const columns = useMemo<ColumnDef<CrmUser>[]>(() => [
         {
@@ -148,36 +142,17 @@ export default function UsersIndex({ users, filters, types }: PageProps) {
         <>
             <Head title="Users" />
             <div className="flex flex-1 flex-col gap-6 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-4 pb-2">
                     <Heading
                         title="Users"
                         description={`${users.total} user${users.total !== 1 ? 's' : ''}`}
                     />
-                    <div className="flex items-center gap-2">
-                        <Input
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search name or email…"
-                            className="w-56"
-                        />
-                        <Select value={type} onValueChange={handleTypeChange}>
-                            <SelectTrigger className="w-32">
-                                <SelectValue placeholder="All types" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="">All types</SelectItem>
-                                {types.map((t) => (
-                                    <SelectItem key={t} value={t}>{t}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {(filters.search || filters.type) && (
-                            <Button variant="ghost" onClick={() => { setSearch(''); handleTypeChange(''); }}>
-                                Reset
-                            </Button>
-                        )}
-                    </div>
                 </div>
+
+                <AdvancedFilter 
+                    availableFields={availableFields} 
+                    onApply={handleApplyFilters} 
+                />
 
                 <DataTable
                     columns={columns}

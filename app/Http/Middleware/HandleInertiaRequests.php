@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\NavigationService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -35,11 +36,17 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $navigationService = app(NavigationService::class);
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? array_merge($request->user()->toArray(), [
+                    'role_name' => $request->user()->roles()->count() > 0
+                        ? $request->user()->roles->pluck('name')->join(', ')
+                        : ucfirst($request->user()->type),
+                ]) : null,
                 'isAdmin' => $request->user()?->isAdmin() ?? false,
                 'module_permissions' => $request->user() ? [
                     'Accounts' => $request->user()->canViewModule('Accounts'),
@@ -49,6 +56,7 @@ class HandleInertiaRequests extends Middleware
                     'Documents' => $request->user()->canViewModule('Documents'),
                 ] : null,
             ],
+            'sidebarMenu' => $navigationService->getMenuForUser($request->user()),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

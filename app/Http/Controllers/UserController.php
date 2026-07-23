@@ -15,7 +15,7 @@ class UserController extends Controller
     public function index(Request $request): Response
     {
         $search = $request->string('search')->toString() ?: null;
-        $type = $request->string('type')->toString() ?: null;
+        $type = $request->input('type');
 
         $users = User::query()
             ->with('defaultTeam')
@@ -24,15 +24,24 @@ class UserController extends Controller
                 $q->where('name', 'like', "%{$s}%")
                     ->orWhere('email', 'like', "%{$s}%");
             }))
-            ->when($type, fn ($q, $t) => $q->where('type', $t))
+            ->when($type, function ($q, $t) {
+                $val = is_array($t) && isset($t['value']) ? $t['value'] : $t;
+                if (is_array($val)) {
+                    $q->whereIn('type', $val);
+                } else {
+                    $q->where('type', $val);
+                }
+            })
             ->orderBy('name')
             ->paginate(20)
             ->withQueryString();
 
         return Inertia::render('users/index', [
             'users' => $users,
-            'filters' => ['search' => $search, 'type' => $type],
-            'types' => ['regular', 'admin', 'portal', 'api'],
+            'filters' => ['search' => $search, 'type' => is_array($type) ? $type : ($type ? [$type] : [])],
+            'filterOptions' => [
+                'types' => collect(['regular', 'admin', 'portal', 'api'])->map(fn ($t) => ['label' => ucfirst($t), 'value' => $t])->toArray(),
+            ],
         ]);
     }
 

@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Models\AuthLogRecord;
+use App\Services\ActivityLogService;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -50,6 +52,13 @@ class AppServiceProvider extends ServiceProvider
                     'authentication_method' => 'Espo',
                     'user_id' => $event->user->id,
                 ]);
+
+                ActivityLogService::log(
+                    action: 'login',
+                    subject: $event->user,
+                    description: 'User logged in',
+                    event: 'login'
+                );
             }
         );
 
@@ -67,6 +76,26 @@ class AppServiceProvider extends ServiceProvider
                     'authentication_method' => 'Espo',
                     'user_id' => $event->user?->id,
                 ]);
+
+                ActivityLogService::log(
+                    action: 'failed_login',
+                    description: 'Failed login attempt for '.($event->credentials['email'] ?? 'unknown'),
+                    event: 'failed_login'
+                );
+            }
+        );
+
+        Event::listen(
+            Logout::class,
+            function (Logout $event) {
+                if ($event->user) {
+                    ActivityLogService::log(
+                        action: 'logout',
+                        subject: $event->user,
+                        description: 'User logged out',
+                        event: 'logout'
+                    );
+                }
             }
         );
     }

@@ -85,6 +85,19 @@ export default function Profile({
                                 />
                             </div>
 
+                            <div className="grid gap-2">
+                                <Label htmlFor="role">Role</Label>
+
+                                <Input
+                                    id="role"
+                                    type="text"
+                                    className="mt-1 block w-full bg-muted text-muted-foreground"
+                                    value={auth.user.role_name || ''}
+                                    readOnly
+                                    disabled
+                                />
+                            </div>
+
                             {mustVerifyEmail &&
                                 auth.user.email_verified_at === null && (
                                     <div>

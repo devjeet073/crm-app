@@ -167,7 +167,9 @@ return;
                     <span className="flex items-center gap-1.5 text-muted-foreground">
                         {row.original.type ?? '—'}
                         {row.original.file && (
-                            <Paperclip className="h-3.5 w-3.5 shrink-0" title="File attached" />
+                            <span title="File attached">
+                                <Paperclip className="h-3.5 w-3.5 shrink-0" />
+                            </span>
                         )}
                     </span>
                 ),

@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import {
     LayoutDashboard,
     Calendar,
@@ -7,13 +7,13 @@ import {
     CheckSquare,
     FileText,
     FolderOpen,
-    Key,
     Settings,
     UserCog,
     Shield,
     UsersRound,
+    Mail,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     CommandDialog,
     CommandEmpty,
@@ -23,8 +23,23 @@ import {
     CommandList,
     CommandSeparator,
 } from '@/components/ui/command';
+import type { Auth } from '@/types';
 
-const navigation = [
+type CommandItem = {
+    name: string;
+    href: string;
+    icon: React.ComponentType<{ className?: string }>;
+    permission?: string;
+    adminOnly?: boolean;
+};
+
+type CommandGroup = {
+    group: string;
+    adminOnly?: boolean;
+    items: CommandItem[];
+};
+
+const navigation: CommandGroup[] = [
     {
         group: 'Navigation',
         items: [
@@ -35,20 +50,21 @@ const navigation = [
     {
         group: 'CRM',
         items: [
-            { name: 'Leads', href: '/leads', icon: Briefcase },
-            { name: 'Accounts', href: '/accounts', icon: Users },
-            { name: 'Tasks', href: '/tasks', icon: CheckSquare },
-            { name: 'Documents', href: '/documents', icon: FileText },
+            { name: 'Leads', href: '/leads', icon: Briefcase, permission: 'Leads' },
+            { name: 'Accounts', href: '/accounts', icon: Users, permission: 'Accounts' },
+            { name: 'Tasks', href: '/tasks', icon: CheckSquare, permission: 'Tasks' },
+            { name: 'Documents', href: '/documents', icon: FileText, permission: 'Documents' },
             { name: 'Document Folders', href: '/document-folders', icon: FolderOpen },
-            { name: 'App Secrets', href: '/app-secrets', icon: Key },
         ],
     },
     {
         group: 'Administration',
+        adminOnly: true,
         items: [
-            { name: 'Users', href: '/users', icon: Users },
-            { name: 'Roles', href: '/roles', icon: Shield },
-            { name: 'Teams', href: '/teams', icon: UsersRound },
+            { name: 'Users', href: '/users', icon: Users, adminOnly: true },
+            { name: 'Roles', href: '/roles', icon: Shield, adminOnly: true },
+            { name: 'Teams', href: '/teams', icon: UsersRound, adminOnly: true },
+            { name: 'Email Configurations', href: '/email-configurations', icon: Mail, adminOnly: true },
         ],
     },
     {
@@ -60,7 +76,28 @@ const navigation = [
     },
 ];
 
+function canAccessItem(
+    item: CommandItem,
+    isAdmin: boolean,
+    modulePermissions: Record<string, boolean> | null,
+): boolean {
+    if (item.adminOnly && !isAdmin) {
+        return false;
+    }
+
+    if (isAdmin) {
+        return true;
+    }
+
+    if (item.permission && modulePermissions) {
+        return modulePermissions[item.permission] === true;
+    }
+
+    return true;
+}
+
 export function CommandPalette() {
+    const { auth } = usePage<{ auth: Auth }>().props;
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
@@ -76,6 +113,26 @@ export function CommandPalette() {
         return () => document.removeEventListener('keydown', down);
     }, []);
 
+    const filteredNavigation = useMemo(
+        () =>
+            navigation
+                .filter((group) => {
+                    if (group.adminOnly && !auth.isAdmin) {
+                        return false;
+                    }
+
+                    return true;
+                })
+                .map((group) => ({
+                    ...group,
+                    items: group.items.filter((item) =>
+                        canAccessItem(item, auth.isAdmin, auth.module_permissions),
+                    ),
+                }))
+                .filter((group) => group.items.length > 0),
+        [auth.isAdmin, auth.module_permissions],
+    );
+
     const navigate = useCallback(
         (href: string) => {
             setOpen(false);
@@ -89,7 +146,7 @@ export function CommandPalette() {
             <CommandInput placeholder="Type a command or search..." />
             <CommandList>
                 <CommandEmpty>No results found.</CommandEmpty>
-                {navigation.map((group, i) => (
+                {filteredNavigation.map((group, i) => (
                     <div key={group.group}>
                         {i > 0 && <CommandSeparator />}
                         <CommandGroup heading={group.group}>

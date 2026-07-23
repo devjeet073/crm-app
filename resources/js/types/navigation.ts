@@ -8,7 +8,17 @@ export type BreadcrumbItem = {
 
 export type NavItem = {
     title: string;
-    href: NonNullable<InertiaLinkProps['href']>;
-    icon?: LucideIcon | null;
+    href?: NonNullable<InertiaLinkProps['href']>;
+    icon?: LucideIcon | string | null;
     isActive?: boolean;
+    badge?: string | number;
+    permission?: string;
+    adminOnly?: boolean;
+    items?: NavItem[];
+};
+
+export type NavGroup = {
+    title: string;
+    adminOnly?: boolean;
+    items: NavItem[];
 };
