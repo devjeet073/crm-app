@@ -14,7 +14,15 @@ import {
 } from '@/components/ui/drawer';
 import { DrawerResizeHandle } from '@/components/ui/drawer-resize-handle';
 import { useDrawerResize } from '@/hooks/use-drawer-resize';
+import { cn } from '@/lib/utils';
 import type { Account } from '@/types';
+
+const WIDTH_PRESETS = [
+    { label: 'Sm', width: 400 },
+    { label: 'Md', width: 560 },
+    { label: 'Lg', width: 720 },
+    { label: 'Xl', width: 800 },
+] as const;
 
 export type AccountDrawerState =
     | { mode: 'create' }
@@ -36,7 +44,7 @@ export function AccountDrawer({
     accountTypes,
     industries,
 }: AccountDrawerProps) {
-    const { width, handleMouseDown } = useDrawerResize();
+    const { width, setWidth, handleMouseDown } = useDrawerResize();
 
     return (
         <Drawer
@@ -49,10 +57,18 @@ export function AccountDrawer({
                 {state?.mode === 'create' && (
                     <>
                         <DrawerHeader>
-                            <DrawerTitle>New account</DrawerTitle>
-                            <DrawerDescription>
-                                Add a company or organization record.
-                            </DrawerDescription>
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex flex-col gap-0.5">
+                                    <DrawerTitle>New account</DrawerTitle>
+                                    <DrawerDescription>
+                                        Add a company or organization record.
+                                    </DrawerDescription>
+                                </div>
+                                <WidthPresets
+                                    currentWidth={width}
+                                    onSelect={setWidth}
+                                />
+                            </div>
                         </DrawerHeader>
                         <div className="overflow-y-auto px-4 pb-4">
                             <AccountForm
@@ -67,11 +83,17 @@ export function AccountDrawer({
                 {state?.mode === 'edit' && (
                     <>
                         <DrawerHeader>
-                            <DrawerTitle>
-                                Edit{' '}
-                                {state.account.name ??
-                                    `account #${state.account.id}`}
-                            </DrawerTitle>
+                            <div className="flex items-start justify-between gap-4">
+                                <DrawerTitle>
+                                    Edit{' '}
+                                    {state.account.name ??
+                                        `account #${state.account.id}`}
+                                </DrawerTitle>
+                                <WidthPresets
+                                    currentWidth={width}
+                                    onSelect={setWidth}
+                                />
+                            </div>
                         </DrawerHeader>
                         <div className="overflow-y-auto px-4 pb-4">
                             <AccountForm
@@ -87,15 +109,23 @@ export function AccountDrawer({
                 {state?.mode === 'view' && (
                     <>
                         <DrawerHeader>
-                            <DrawerTitle>
-                                {state.account.name ??
-                                    `Account #${state.account.id}`}
-                            </DrawerTitle>
-                            {state.account.type && (
-                                <DrawerDescription>
-                                    {state.account.type}
-                                </DrawerDescription>
-                            )}
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex flex-col gap-0.5">
+                                    <DrawerTitle>
+                                        {state.account.name ??
+                                            `Account #${state.account.id}`}
+                                    </DrawerTitle>
+                                    {state.account.type && (
+                                        <DrawerDescription>
+                                            {state.account.type}
+                                        </DrawerDescription>
+                                    )}
+                                </div>
+                                <WidthPresets
+                                    currentWidth={width}
+                                    onSelect={setWidth}
+                                />
+                            </div>
                         </DrawerHeader>
                         <div className="overflow-y-auto px-4 pb-4">
                             <AccountDetails account={state.account} />
@@ -128,5 +158,33 @@ export function AccountDrawer({
                 )}
             </DrawerContent>
         </Drawer>
+    );
+}
+
+function WidthPresets({
+    currentWidth,
+    onSelect,
+}: {
+    currentWidth: number;
+    onSelect: (width: number) => void;
+}) {
+    return (
+        <div className="flex shrink-0 items-center gap-0.5 rounded-md border p-0.5">
+            {WIDTH_PRESETS.map((preset) => (
+                <button
+                    key={preset.width}
+                    type="button"
+                    onClick={() => onSelect(preset.width)}
+                    className={cn(
+                        'rounded px-2 py-1 text-xs font-medium transition-colors',
+                        currentWidth === preset.width
+                            ? 'bg-muted text-foreground'
+                            : 'text-muted-foreground hover:text-foreground',
+                    )}
+                >
+                    {preset.label}
+                </button>
+            ))}
+        </div>
     );
 }

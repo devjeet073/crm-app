@@ -1,16 +1,19 @@
 import { Head, router } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { useMemo } from 'react';
 import { CheckCircle2, XCircle, Trash2 } from 'lucide-react';
+import { useMemo } from 'react';
+import type { FilterField } from '@/components/advanced-filter';
+import { AdvancedFilter } from '@/components/advanced-filter';
 import { DataTable, DataTableColumnHeader } from '@/components/data-table';
 import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { getInitials } from '@/lib/utils';
 import { index as usersIndex, show as usersShow, destroy as usersDestroy } from '@/routes/users';
 import type { BreadcrumbItem, CrmUser, Paginated } from '@/types';
-import { AdvancedFilter, FilterField } from '@/components/advanced-filter';
 
 type PageProps = {
     users: Paginated<CrmUser>;
@@ -19,22 +22,22 @@ type PageProps = {
 };
 
 const TYPE_BADGE: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-    admin:   'default',
+    admin: 'default',
     regular: 'secondary',
-    portal:  'outline',
-    api:     'outline',
-    system:  'destructive',
+    portal: 'outline',
+    api: 'outline',
+    system: 'destructive',
 };
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Users', href: usersIndex() }];
 
 export default function UsersIndex({ users, filters, filterOptions }: PageProps) {
-    
+
     const availableFields: FilterField[] = [
         { name: 'name', label: 'Name', type: 'text' },
         { name: 'email', label: 'Email', type: 'text' },
         { name: 'type', label: 'Type', type: 'select', options: filterOptions.types || [] },
-        { name: 'is_active', label: 'Status', type: 'select', options: [{label: 'Active', value: '1'}, {label: 'Inactive', value: '0'}] },
+        { name: 'is_active', label: 'Status', type: 'select', options: [{ label: 'Active', value: '1' }, { label: 'Inactive', value: '0' }] },
         { name: 'created_at', label: 'Created At', type: 'date' },
     ];
 
@@ -52,7 +55,13 @@ export default function UsersIndex({ users, filters, filterOptions }: PageProps)
             header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="Name" />,
             meta: { label: 'Name' },
             cell: ({ row }) => (
-                <a href={usersShow.url(row.original)} className="font-medium hover:underline">
+                <a href={usersShow.url(row.original)} className="flex items-center gap-3 font-medium hover:underline">
+                    <Avatar className="h-7 w-7 text-[10px]">
+                        <AvatarImage src={row.original.avatar_url ?? undefined} alt={row.original.name} />
+                        <AvatarFallback style={{ backgroundColor: row.original.avatar_color ?? '#6366f1' }} className="text-white font-semibold">
+                            {getInitials(row.original.name)}
+                        </AvatarFallback>
+                    </Avatar>
                     {row.original.name}
                 </a>
             ),
@@ -117,6 +126,7 @@ export default function UsersIndex({ users, filters, filterOptions }: PageProps)
             enableHiding: false,
             cell: ({ row }) => {
                 const user = row.original;
+
                 return (
                     <div className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="sm" asChild>
@@ -149,9 +159,9 @@ export default function UsersIndex({ users, filters, filterOptions }: PageProps)
                     />
                 </div>
 
-                <AdvancedFilter 
-                    availableFields={availableFields} 
-                    onApply={handleApplyFilters} 
+                <AdvancedFilter
+                    availableFields={availableFields}
+                    onApply={handleApplyFilters}
                 />
 
                 <DataTable

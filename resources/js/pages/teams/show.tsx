@@ -26,10 +26,16 @@ export default function TeamShow({ team }: PageProps) {
 
     function handleAssignUser(e: React.FormEvent) {
         e.preventDefault();
-        if (!assignUserId) return;
+
+        if (!assignUserId) {
+return;
+}
+
         router.post(teamsAssignUser.url(team), { user_id: assignUserId, role: assignUserRole || null }, {
             preserveScroll: true,
-            onSuccess: () => { setAssignUserId(''); setAssignUserRole(''); },
+            onSuccess: () => {
+ setAssignUserId(''); setAssignUserRole(''); 
+},
         });
     }
 

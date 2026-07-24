@@ -48,8 +48,10 @@ export function useCurrentUrl(): UseCurrentUrlReturn {
                 if (path === '/') {
                     return urlToCompare === '/';
                 }
+
                 return urlToCompare === path || urlToCompare.startsWith(path + '/');
             }
+
             return path === urlToCompare;
         };
 

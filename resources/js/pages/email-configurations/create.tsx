@@ -31,7 +31,7 @@ export default function EmailConfigurationsCreate({ mailers, encryptionOptions }
                     <p className="text-sm text-muted-foreground mt-1">Set up a new SMTP or email delivery configuration.</p>
                 </div>
 
-                <Form action={configsStore.form.post} method="post" resetOnSuccess className="space-y-6">
+                <Form {...configsStore.form()} resetOnSuccess className="space-y-6">
                     {({ errors, processing }) => (
                         <>
                             <Card>

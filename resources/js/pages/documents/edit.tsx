@@ -2,11 +2,11 @@ import { Head, useForm } from '@inertiajs/react';
 import { X } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { DatePicker } from '@/components/ui/date-picker';
 import UserCombobox from '@/components/user-combobox';
 import type { BreadcrumbItem, Document, DocumentFolder, User } from '@/types';
 

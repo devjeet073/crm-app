@@ -67,7 +67,7 @@ export function KanbanCard({ task, index, onTaskClick }: KanbanCardProps) {
                                 Due{' '}
                                 {format(
                                     new Date(task.date_end),
-                                    'dd/MM/yyyy',
+                                    'dd MMM HH:mm',
                                 )}
                             </span>
                         )}

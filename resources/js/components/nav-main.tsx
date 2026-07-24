@@ -16,12 +16,18 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import type { NavGroup, NavItem } from '@/types';
 
 function renderIcon(icon?: LucideIcon | string | null) {
-    if (!icon) return null;
+    if (!icon) {
+return null;
+}
+
     if (typeof icon === 'string') {
         const IconComponent = (LucideIcons as unknown as Record<string, LucideIcon>)[icon] || LucideIcons.Circle;
+
         return <IconComponent className="h-4 w-4 shrink-0" />;
     }
+
     const IconComponent = icon;
+
     return <IconComponent className="h-4 w-4 shrink-0" />;
 }
 
@@ -79,6 +85,7 @@ export function NavMain({ groups, items }: NavMainProps) {
                                                 <SidebarMenuSub>
                                                     {item.items?.map((subItem) => {
                                                         const isSubActive = Boolean(subItem.href && isCurrentOrParentUrl(subItem.href));
+
                                                         return (
                                                             <SidebarMenuSubItem key={subItem.title}>
                                                                 <SidebarMenuSubButton

@@ -27,6 +27,8 @@ class UpdateUserRequest extends FormRequest
             'salutation_name' => ['nullable', 'string', 'max:20'],
             'middle_name' => ['nullable', 'string', 'max:100'],
             'gender' => ['nullable', Rule::in(['Male', 'Female', 'Other'])],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
+            'remove_avatar' => ['nullable', 'boolean'],
             'avatar_color' => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'default_team_id' => ['nullable', 'exists:teams,id'],
 

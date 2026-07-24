@@ -31,8 +31,11 @@ const MIME_ICONS: Record<string, string> = {
 
 function getFileTypeLabel(mimeType: string): string {
     for (const [key, label] of Object.entries(MIME_ICONS)) {
-        if (mimeType.startsWith(key)) return label;
+        if (mimeType.startsWith(key)) {
+return label;
+}
     }
+
     return 'FILE';
 }
 
@@ -132,11 +135,11 @@ export default function DocumentShow({ document }: PageProps) {
                         />
                         <DetailRow
                             label="Created"
-                            value={format(new Date(document.created_at), 'dd MMM yyyy, HH:mm')}
+                            value={format(new Date(document.created_at), 'dd MMM HH:mm')}
                         />
                         <DetailRow
                             label="Last modified"
-                            value={format(new Date(document.updated_at), 'dd MMM yyyy, HH:mm')}
+                            value={format(new Date(document.updated_at), 'dd MMM HH:mm')}
                         />
                         <DetailRow
                             label="Description"

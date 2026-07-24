@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import { Search, MoreVertical, X } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export interface FilterField {
     name: string;
@@ -92,7 +92,10 @@ export function AdvancedFilter({ availableFields, onApply }: AdvancedFilterProps
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {activeFilters.map((filter, index) => {
                             const fieldDef = availableFields.find(f => f.name === filter.field);
-                            if (!fieldDef) return null;
+
+                            if (!fieldDef) {
+return null;
+}
 
                             return (
                                 <div key={filter.field} className="space-y-1.5">

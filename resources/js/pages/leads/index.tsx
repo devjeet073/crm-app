@@ -112,7 +112,7 @@ export default function LeadsIndex({
             lead.status,
             lead.source ?? '',
             lead.assigned_user?.name ?? '',
-            format(new Date(lead.created_at), 'dd/MM/yyyy'),
+            format(new Date(lead.created_at), 'dd MMM HH:mm'),
         ]);
         const csv = [headers, ...rows].map((r) => r.join(',')).join('\n');
         const blob = new Blob([csv], { type: 'text/csv' });
@@ -247,7 +247,7 @@ export default function LeadsIndex({
                     <span className="text-muted-foreground">
                         {format(
                             new Date(row.original.created_at),
-                            'dd/MM/yyyy',
+                            'dd MMM HH:mm',
                         )}
                     </span>
                 ),

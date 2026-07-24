@@ -221,7 +221,7 @@ export default function TasksIndex({
                         {row.original.date_end
                             ? format(
                                   new Date(row.original.date_end),
-                                  'dd/MM/yyyy',
+                                  'dd MMM HH:mm',
                               )
                             : '—'}
                     </span>

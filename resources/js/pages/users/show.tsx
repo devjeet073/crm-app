@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { Pencil, Shield, Users, Clock, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 import Heading from '@/components/heading';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,13 +34,12 @@ export default function UserShow({ user }: PageProps) {
                 {/* Header */}
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        {/* Avatar */}
-                        <div
-                            className="flex h-14 w-14 items-center justify-center rounded-full text-xl font-semibold text-white"
-                            style={{ backgroundColor: user.avatar_color ?? '#6366f1' }}
-                        >
-                            {user.name.charAt(0).toUpperCase()}
-                        </div>
+                        <Avatar className="h-14 w-14 text-xl font-semibold">
+                            <AvatarImage src={user.avatar_url ?? undefined} alt={user.name} />
+                            <AvatarFallback style={{ backgroundColor: user.avatar_color ?? '#6366f1' }} className="text-white">
+                                {getInitials(user.name)}
+                            </AvatarFallback>
+                        </Avatar>
                         <div>
                             <Heading title={user.name} description={user.title ?? user.email} />
                         </div>
@@ -157,7 +157,7 @@ export default function UserShow({ user }: PageProps) {
                                             </div>
                                         </div>
                                         <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                            {new Date(log.created_at).toLocaleString()}
+                                            {format(new Date(log.created_at), 'dd MMM HH:mm')}
                                         </span>
                                     </div>
                                 ))}

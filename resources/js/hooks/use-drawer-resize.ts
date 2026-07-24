@@ -70,5 +70,11 @@ export function useDrawerResize() {
         [handleMouseMove],
     );
 
-    return { width, handleMouseDown };
+    const setDrawerWidth = useCallback((newWidth: number) => {
+        const clamped = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, newWidth));
+        setWidth(clamped);
+        localStorage.setItem(STORAGE_KEY, String(clamped));
+    }, []);
+
+    return { width, setWidth: setDrawerWidth, handleMouseDown };
 }

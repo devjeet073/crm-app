@@ -211,6 +211,8 @@ export type CrmUser = {
     type: 'regular' | 'admin' | 'portal' | 'api' | 'system';
     is_active: boolean;
     title: string | null;
+    avatar: string | null;
+    avatar_url: string | null;
     avatar_color: string | null;
     salutation_name: string | null;
     middle_name: string | null;

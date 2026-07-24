@@ -1,11 +1,10 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -14,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Textarea } from '@/components/ui/textarea';
 import { index as rolesIndex, store as rolesStore } from '@/routes/roles';
 import type { BreadcrumbItem } from '@/types';
 
@@ -52,8 +52,10 @@ export default function RoleCreate({ permissionColumns, permissionLevels, crmMod
         data: crmModules.reduce((acc, mod) => {
             acc[mod] = crudActions.reduce((actAcc, action) => {
                 actAcc[action] = 'not-set';
+
                 return actAcc;
             }, {} as Record<string, string>);
+
             return acc;
         }, {} as Record<string, Record<string, string>>),
         ...Object.fromEntries(permissionColumns.map((col) => [col, 'not-set'])),
@@ -154,7 +156,11 @@ export default function RoleCreate({ permissionColumns, permissionLevels, crmMod
                                                             value={data.data[module]?.[action] || 'not-set'}
                                                             onValueChange={(val) => {
                                                                 const newData = { ...data.data };
-                                                                if (!newData[module]) newData[module] = {};
+
+                                                                if (!newData[module]) {
+newData[module] = {};
+}
+
                                                                 newData[module][action] = val;
                                                                 setData('data', newData);
                                                             }}

@@ -68,7 +68,7 @@ export default function DocumentFoldersIndex({ folders }: PageProps) {
                 meta: { label: 'Created' },
                 cell: ({ row }) => (
                     <span className="text-muted-foreground">
-                        {format(new Date(row.original.created_at), 'dd/MM/yyyy')}
+                        {format(new Date(row.original.created_at), 'dd MMM HH:mm')}
                     </span>
                 ),
             },
@@ -79,6 +79,7 @@ export default function DocumentFoldersIndex({ folders }: PageProps) {
                 enableHiding: false,
                 cell: ({ row }) => {
                     const folder = row.original;
+
                     return (
                         <div className="flex items-center justify-end gap-1">
                             <a

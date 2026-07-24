@@ -15,7 +15,7 @@ export function useInitials(): GetInitialsFn {
         }
 
         if (names.length === 1) {
-            return getInitial(names[0]).toUpperCase();
+            return names[0].substring(0, 2).toUpperCase();
         }
 
         const firstInitial = getInitial(names[0]);

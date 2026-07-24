@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Task } from '@/types';
@@ -37,7 +38,7 @@ export function TaskDetails({ task }: { task: Task }) {
                         label="Start date"
                         value={
                             task.date_start
-                                ? new Date(task.date_start).toLocaleString()
+                                ? format(new Date(task.date_start), 'dd MMM HH:mm')
                                 : null
                         }
                     />
@@ -45,7 +46,7 @@ export function TaskDetails({ task }: { task: Task }) {
                         label="Due date"
                         value={
                             task.date_end
-                                ? new Date(task.date_end).toLocaleString()
+                                ? format(new Date(task.date_end), 'dd MMM HH:mm')
                                 : null
                         }
                     />

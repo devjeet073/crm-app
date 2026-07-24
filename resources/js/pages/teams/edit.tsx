@@ -1,10 +1,10 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { index as teamsIndex, show as teamsShow, update as teamsUpdate } from '@/routes/teams';
 import type { BreadcrumbItem, Team } from '@/types';
 

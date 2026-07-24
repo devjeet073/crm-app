@@ -201,7 +201,7 @@ return;
                 cell: ({ row }) => (
                     <span className="text-muted-foreground">
                         {row.original.expiration_date
-                            ? format(new Date(row.original.expiration_date), 'dd/MM/yyyy')
+                            ? format(new Date(row.original.expiration_date), 'dd MMM HH:mm')
                             : '—'}
                     </span>
                 ),
@@ -227,7 +227,7 @@ return;
                 meta: { label: 'Created' },
                 cell: ({ row }) => (
                     <span className="text-muted-foreground">
-                        {format(new Date(row.original.created_at), 'dd/MM/yyyy')}
+                        {format(new Date(row.original.created_at), 'dd MMM HH:mm')}
                     </span>
                 ),
             },

@@ -85,6 +85,7 @@ export default function ResourceSelect({
         if (!value) {
             setSelectedItem(null);
             setInputValue('');
+
             return;
         }
 
@@ -94,12 +95,15 @@ export default function ResourceSelect({
 
         if (initialItem && initialItem.value === value) {
             setSelectedItem(initialItem);
+
             return;
         }
 
         const found = items.find((item) => item.value === value);
+
         if (found) {
             setSelectedItem(found);
+
             return;
         }
 
@@ -111,6 +115,7 @@ export default function ResourceSelect({
                 const response = await fetch(`${searchUrl}?${params.toString()}`);
                 const data = await response.json();
                 const rawList = responseKey ? data[responseKey] : data;
+
                 if (Array.isArray(rawList) && rawList.length > 0 && active) {
                     const mapped = mapItem(rawList[0]);
                     setSelectedItem(mapped);
@@ -230,6 +235,7 @@ export default function ResourceSelect({
                     className="absolute right-0 flex h-9 w-9 items-center justify-center text-muted-foreground hover:text-foreground"
                     onMouseDown={(e) => {
                         e.preventDefault();
+
                         if (isOpen) {
                             setIsOpen(false);
                         } else {

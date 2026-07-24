@@ -1,16 +1,16 @@
 import { Head, router } from '@inertiajs/react';
-import { useMemo, useState, useEffect } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Activity, Search } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
 import { DataTable, DataTableColumnHeader } from '@/components/data-table';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { BreadcrumbItem, Paginated } from '@/types';
 
 // Utility for action badge colors
@@ -34,6 +34,7 @@ export default function ActivityLogsIndex({ logs, filters, options }: any) {
     useEffect(() => {
         const t = window.setTimeout(() => {
             const currentSearch = search.trim();
+
             if (currentSearch !== (filters.search || '')) {
                 router.get('/activity-logs', { 
                     search: currentSearch || undefined, 
@@ -41,6 +42,7 @@ export default function ActivityLogsIndex({ logs, filters, options }: any) {
                 }, { preserveState: true, replace: true });
             }
         }, 350);
+
         return () => window.clearTimeout(t);
     }, [search]);
 
@@ -89,7 +91,7 @@ export default function ActivityLogsIndex({ logs, filters, options }: any) {
         {
             accessorKey: 'created_at',
             header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="Date/Time" />,
-            cell: ({ row }) => <span>{format(new Date(row.original.created_at), 'dd MMM yyyy, hh:mm a')}</span>
+            cell: ({ row }) => <span>{format(new Date(row.original.created_at), 'dd MMM HH:mm')}</span>
         },
         {
             id: 'actions',
@@ -149,7 +151,7 @@ export default function ActivityLogsIndex({ logs, filters, options }: any) {
                                 <div><span className="font-semibold text-muted-foreground">IP Address:</span> {selectedLog.ip_address}</div>
                                 <div><span className="font-semibold text-muted-foreground">Action:</span> {selectedLog.action}</div>
                                 <div><span className="font-semibold text-muted-foreground">Entity:</span> {selectedLog.subject_type || 'N/A'}</div>
-                                <div><span className="font-semibold text-muted-foreground">Date:</span> {format(new Date(selectedLog.created_at), 'PPpp')}</div>
+                                <div><span className="font-semibold text-muted-foreground">Date:</span> {format(new Date(selectedLog.created_at), 'dd MMM HH:mm')}</div>
                                 <div><span className="font-semibold text-muted-foreground">URL:</span> {selectedLog.url}</div>
                             </div>
                             

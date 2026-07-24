@@ -55,13 +55,21 @@ export default function RoleShow({ role, crmModules, crudActions }: PageProps) {
 
     function handleAssignUser(e: React.FormEvent) {
         e.preventDefault();
-        if (!assignUserId) return;
+
+        if (!assignUserId) {
+return;
+}
+
         router.post(rolesAssignUser.url(role), { user_id: assignUserId }, { preserveScroll: true, onSuccess: () => setAssignUserId('') });
     }
 
     function handleAssignTeam(e: React.FormEvent) {
         e.preventDefault();
-        if (!assignTeamId) return;
+
+        if (!assignTeamId) {
+return;
+}
+
         router.post(rolesAssignTeam.url(role), { team_id: assignTeamId }, { preserveScroll: true, onSuccess: () => setAssignTeamId('') });
     }
 
@@ -107,6 +115,7 @@ export default function RoleShow({ role, crmModules, crudActions }: PageProps) {
                             <div className="grid grid-cols-2 gap-2">
                                 {Object.entries(PERMISSION_LABELS).map(([key, label]) => {
                                     const val = (role as any)[key] ?? 'not-set';
+
                                     return (
                                         <div key={key} className="flex items-center justify-between gap-2 rounded-md border px-3 py-1.5 text-sm">
                                             <span className="text-muted-foreground">{label}</span>
@@ -143,6 +152,7 @@ export default function RoleShow({ role, crmModules, crudActions }: PageProps) {
                                                 <TableCell className="font-medium">{module}</TableCell>
                                                 {crudActions.map(action => {
                                                     const val = ((role as any).data)?.[module]?.[action] || 'not-set';
+
                                                     return (
                                                         <TableCell key={action} className="text-center p-2">
                                                             <Badge variant={PERMISSION_COLORS[val] as any}>

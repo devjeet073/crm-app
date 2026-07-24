@@ -34,8 +34,7 @@ export default function EmailConfigurationsEdit({ config, mailers, encryptionOpt
                 </div>
 
                 <Form
-                    action={configsUpdate.form.patch}
-                    method="post"
+                    {...configsUpdate.form({ id: config.id })}
                     resetOnSuccess
                     defaults={{
                         name: config.name,

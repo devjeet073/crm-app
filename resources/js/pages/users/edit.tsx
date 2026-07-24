@@ -1,13 +1,17 @@
 import { Head, router, useForm } from '@inertiajs/react';
+import { Upload, X } from 'lucide-react';
+import { useRef } from 'react';
 import Heading from '@/components/heading';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { index as usersIndex, show as usersShow, update as usersUpdate } from '@/routes/users';
-import type { BreadcrumbItem, CrmUser, Team } from '@/types';
+import { getInitials } from '@/lib/utils';
+import { show as usersShow, update as usersUpdate } from '@/routes/users';
+import type { CrmUser, Team } from '@/types';
 
 type PageProps = {
     user: CrmUser;
@@ -16,11 +20,7 @@ type PageProps = {
 };
 
 export default function UserEdit({ user, teams, types }: PageProps) {
-    const breadcrumbs: BreadcrumbItem[] = [
-        { title: 'Users', href: usersIndex() },
-        { title: user.name, href: usersShow.url(user) },
-        { title: 'Edit', href: '' },
-    ];
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { data, setData, patch, errors, processing } = useForm({
         name:             user.name,
@@ -29,11 +29,37 @@ export default function UserEdit({ user, teams, types }: PageProps) {
         salutation_name:  user.salutation_name  ?? '',
         middle_name:      user.middle_name      ?? '',
         gender:           user.gender           ?? '',
+        avatar:           null as File | null,
+        remove_avatar:    false,
         avatar_color:     user.avatar_color     ?? '#6366f1',
         type:             user.type,
         is_active:        user.is_active,
         default_team_id:  user.default_team_id?.toString() ?? '',
     });
+
+    const avatarPreview = data.avatar
+        ? URL.createObjectURL(data.avatar)
+        : data.remove_avatar
+            ? null
+            : user.avatar_url;
+
+    function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+
+        if (file) {
+            setData('avatar', file);
+            setData('remove_avatar', false);
+        }
+    }
+
+    function handleRemoveAvatar() {
+        setData('avatar', null);
+        setData('remove_avatar', true);
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    }
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -100,6 +126,50 @@ export default function UserEdit({ user, teams, types }: PageProps) {
                                 <div className="space-y-1.5">
                                     <Label htmlFor="title">Job Title</Label>
                                     <Input id="title" value={data.title} onChange={(e) => setData('title', e.target.value)} placeholder="e.g. Sales Manager" />
+                                </div>
+
+                                <div className="space-y-3">
+                                    <Label>Avatar</Label>
+                                    <div className="flex items-start gap-4">
+                                        <Avatar className="h-16 w-16 text-xl font-semibold">
+                                            <AvatarImage src={avatarPreview ?? undefined} alt={user.name} />
+                                            <AvatarFallback style={{ backgroundColor: data.avatar_color ?? '#6366f1' }} className="text-white">
+                                                {getInitials(user.name)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="space-y-2">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => fileInputRef.current?.click()}
+                                            >
+                                                <Upload className="mr-1.5 h-4 w-4" />
+                                                Upload image
+                                            </Button>
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                accept="image/jpeg,image/png,image/webp,image/gif"
+                                                className="hidden"
+                                                onChange={handleAvatarChange}
+                                            />
+                                            {(user.avatar_url || data.avatar) && !data.remove_avatar && (
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-destructive"
+                                                    onClick={handleRemoveAvatar}
+                                                >
+                                                    <X className="mr-1.5 h-4 w-4" />
+                                                    Remove
+                                                </Button>
+                                            )}
+                                            {errors.avatar && <p className="text-sm text-destructive">{errors.avatar}</p>}
+                                            <p className="text-xs text-muted-foreground">JPG, PNG, WebP, GIF. Max 2MB.</p>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-1.5">

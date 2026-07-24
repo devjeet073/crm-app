@@ -23,6 +23,7 @@ export function useFilters({ initialFilters, url }: UseFiltersProps) {
 
             // Clean up empty filters
             const cleanFilters: Record<string, any> = {};
+
             for (const [key, value] of Object.entries(nextFilters)) {
                 if (value !== null && value !== '' && (Array.isArray(value) ? value.length > 0 : true)) {
                     cleanFilters[key] = value;
@@ -63,9 +64,11 @@ export function useFilters({ initialFilters, url }: UseFiltersProps) {
 
     const clearAllFilters = useCallback(() => {
         const cleared: Filters = {};
+
         for (const key of Object.keys(filters)) {
             cleared[key] = null;
         }
+
         applyFilters(cleared);
     }, [filters, applyFilters]);
 

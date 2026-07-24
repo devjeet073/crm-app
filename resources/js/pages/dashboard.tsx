@@ -1,6 +1,6 @@
-import * as React from 'react';
 import { Head } from '@inertiajs/react';
 import { Building2, FileText, ListTodo, UserPlus } from 'lucide-react';
+import * as React from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
 import {
@@ -15,9 +15,10 @@ import {
   ChartLegend,
   ChartLegendContent,
   ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
+  ChartTooltipContent
+  
 } from '@/components/ui/chart';
+import type {ChartConfig} from '@/components/ui/chart';
 import {
   Select,
   SelectContent,
@@ -60,13 +61,16 @@ export default function Dashboard({ stats, graphData = [] }: DashboardProps) {
     const [timeRange, setTimeRange] = React.useState('90d');
 
     const filteredData = React.useMemo(() => {
-        if (!graphData.length) return [];
+        if (!graphData.length) {
+return [];
+}
         
         return graphData.filter((item) => {
             const date = new Date(item.date);
             const referenceDate = new Date(graphData[graphData.length - 1].date);
             
             let daysToSubtract = 90;
+
             if (timeRange === '30d') {
                 daysToSubtract = 30;
             } else if (timeRange === '7d') {
@@ -75,6 +79,7 @@ export default function Dashboard({ stats, graphData = [] }: DashboardProps) {
             
             const startDate = new Date(referenceDate);
             startDate.setDate(startDate.getDate() - daysToSubtract);
+
             return date >= startDate;
         });
     }, [graphData, timeRange]);
@@ -179,6 +184,7 @@ export default function Dashboard({ stats, graphData = [] }: DashboardProps) {
                                     minTickGap={32}
                                     tickFormatter={(value) => {
                                         const date = new Date(value);
+
                                         return date.toLocaleDateString('en-US', {
                                             month: 'short',
                                             day: 'numeric',

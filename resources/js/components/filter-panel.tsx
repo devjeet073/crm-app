@@ -1,9 +1,9 @@
 import { Search, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
     Sheet,
     SheetContent,
@@ -108,7 +108,10 @@ export function ActiveFilters({ filters, removeFilter }: { filters: Record<strin
     const activeTags: { key: string; value: any; label: string }[] = [];
     
     Object.entries(filters).forEach(([key, value]) => {
-        if (!value) return;
+        if (!value) {
+return;
+}
+
         if (key === 'search' && typeof value === 'string' && value.length > 0) {
             activeTags.push({ key, value, label: `Search: ${value}` });
         } else if (Array.isArray(value)) {
@@ -120,7 +123,9 @@ export function ActiveFilters({ filters, removeFilter }: { filters: Record<strin
         }
     });
 
-    if (activeTags.length === 0) return null;
+    if (activeTags.length === 0) {
+return null;
+}
 
     return (
         <div className="flex flex-wrap items-center gap-2 pb-4">
