@@ -1,7 +1,9 @@
-import { Head, setLayoutProps } from '@inertiajs/react';
+import { Head, router, setLayoutProps } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
 import AccountController from '@/actions/App/Http/Controllers/AccountController';
 import AccountForm from '@/components/accounts/account-form';
 import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
 import { index as accountsIndex } from '@/routes/accounts';
 import type { Account, BreadcrumbItem } from '@/types';
 
@@ -32,7 +34,15 @@ export default function AccountsEdit({
             <Head title={`Edit ${account.name ?? 'account'}`} />
 
             <div className="flex flex-1 flex-col gap-6 p-4">
-                <Heading title={`Edit ${account.name ?? 'account'}`} />
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <Heading title={`Edit ${account.name ?? 'account'}`} />
+                    <Button
+                        variant="outline"
+                        onClick={() => router.visit(accountsIndex.url())}
+                    >
+                        <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
+                    </Button>
+                </div>
 
                 <AccountForm
                     account={account}

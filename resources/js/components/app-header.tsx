@@ -116,7 +116,9 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                             {rightNavItems.map((item) => (
                                                 <a
                                                     key={item.title}
-                                                    href={toUrl(item.href || '#')}
+                                                    href={toUrl(
+                                                        item.href || '#',
+                                                    )}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="flex items-center space-x-2 font-medium"

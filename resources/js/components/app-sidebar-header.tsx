@@ -20,11 +20,18 @@ export function AppSidebarHeader({
                     variant="outline"
                     size="sm"
                     className="h-8 gap-2 text-muted-foreground"
-                    onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }))}
+                    onClick={() =>
+                        document.dispatchEvent(
+                            new KeyboardEvent('keydown', {
+                                key: 'k',
+                                metaKey: true,
+                            }),
+                        )
+                    }
                 >
                     <Search data-icon="inline-start" />
                     <span className="hidden md:inline">Search...</span>
-                    <kbd className="pointer-events-none hidden select-none items-center gap-1 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                    <kbd className="pointer-events-none hidden items-center gap-1 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 select-none sm:flex">
                         <span className="text-xs">⌘</span>K
                     </kbd>
                 </Button>

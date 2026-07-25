@@ -8,7 +8,7 @@ test('guests are redirected to the login page', function () {
 });
 
 test('authenticated users can list accounts', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     Account::factory(3)->create();
 
     $this->actingAs($user)
@@ -21,7 +21,7 @@ test('authenticated users can list accounts', function () {
 });
 
 test('accounts can be sorted by type on the server', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     Account::factory()->create(['name' => 'Zeta', 'type' => 'Reseller']);
     Account::factory()->create(['name' => 'Alpha', 'type' => 'Customer']);
     Account::factory()->create(['name' => 'Mid', 'type' => 'Investor']);
@@ -38,7 +38,7 @@ test('accounts can be sorted by type on the server', function () {
 });
 
 test('accounts can be sorted by assigned user on the server', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     $first = User::factory()->create(['name' => 'Amy Adams']);
     $second = User::factory()->create(['name' => 'Zack Zim']);
     Account::factory()->create(['name' => 'One', 'assigned_user_id' => $second->id]);
@@ -54,7 +54,7 @@ test('accounts can be sorted by assigned user on the server', function () {
 });
 
 test('an invalid sort field falls back to the default', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     Account::factory()->create(['name' => 'Acme Corp']);
 
     $this->actingAs($user)
@@ -68,7 +68,7 @@ test('an invalid sort field falls back to the default', function () {
 });
 
 test('the account search filter matches by name', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     Account::factory()->create(['name' => 'Acme Corp']);
     Account::factory()->create(['name' => 'Globex']);
 
@@ -82,7 +82,7 @@ test('the account search filter matches by name', function () {
 });
 
 test('authenticated users can view the create account form', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
 
     $this->actingAs($user)
         ->get(route('accounts.create'))
@@ -91,7 +91,7 @@ test('authenticated users can view the create account form', function () {
 });
 
 test('an account can be created', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
 
     $response = $this->actingAs($user)->post(route('accounts.store'), [
         'name' => 'Acme Corp',
@@ -108,7 +108,7 @@ test('an account can be created', function () {
 });
 
 test('creating an account requires a name', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
 
     $this->actingAs($user)
         ->post(route('accounts.store'), ['name' => ''])
@@ -116,7 +116,7 @@ test('creating an account requires a name', function () {
 });
 
 test('an account can be viewed', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     $account = Account::factory()->create();
 
     $this->actingAs($user)
@@ -129,7 +129,7 @@ test('an account can be viewed', function () {
 });
 
 test('an account can be updated', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     $account = Account::factory()->create(['name' => 'Old Name']);
 
     $response = $this->actingAs($user)->put(route('accounts.update', $account), [
@@ -142,7 +142,7 @@ test('an account can be updated', function () {
 });
 
 test('an account can be deleted', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     $account = Account::factory()->create();
 
     $response = $this->actingAs($user)->delete(route('accounts.destroy', $account));

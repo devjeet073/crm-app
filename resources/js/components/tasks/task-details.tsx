@@ -38,7 +38,10 @@ export function TaskDetails({ task }: { task: Task }) {
                         label="Start date"
                         value={
                             task.date_start
-                                ? format(new Date(task.date_start), 'dd MMM HH:mm')
+                                ? format(
+                                      new Date(task.date_start),
+                                      'dd MMM HH:mm',
+                                  )
                                 : null
                         }
                     />
@@ -46,7 +49,10 @@ export function TaskDetails({ task }: { task: Task }) {
                         label="Due date"
                         value={
                             task.date_end
-                                ? format(new Date(task.date_end), 'dd MMM HH:mm')
+                                ? format(
+                                      new Date(task.date_end),
+                                      'dd MMM HH:mm',
+                                  )
                                 : null
                         }
                     />
@@ -54,10 +60,7 @@ export function TaskDetails({ task }: { task: Task }) {
                         label="Assigned to"
                         value={task.assigned_user?.name}
                     />
-                    <Field
-                        label="Account"
-                        value={task.account?.name}
-                    />
+                    <Field label="Account" value={task.account?.name} />
                     {task.description && (
                         <div className="grid gap-1 sm:col-span-2">
                             <span className="text-sm text-muted-foreground">

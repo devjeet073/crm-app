@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Download, Pencil, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -11,8 +12,9 @@ import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { index as accountsIndex } from '@/routes/accounts';
-import type { Account, BreadcrumbItem, Paginated } from '@/types';
+import type { Account, BreadcrumbItem, Paginated, Auth } from '@/types';
 
 type PageProps = {
     accounts: Paginated<Account>;
@@ -38,6 +40,12 @@ export default function AccountsIndex({
     const [search, setSearch] = useState(filters.search ?? '');
     const [drawer, setDrawer] = useState<AccountDrawerState | null>(null);
     const [selectedAccounts, setSelectedAccounts] = useState<Account[]>([]);
+    const isMobile = useIsMobile();
+    const { auth } = usePage<{ auth: Auth }>().props;
+
+    const canInsert = auth.isAdmin || auth.module_permissions?.['Accounts']?.insert;
+    const canUpdate = auth.isAdmin || auth.module_permissions?.['Accounts']?.update;
+    const canDelete = auth.isAdmin || auth.module_permissions?.['Accounts']?.delete;
 
     useEffect(() => {
         setSearch(filters.search ?? '');
@@ -118,23 +126,20 @@ export default function AccountsIndex({
         });
     }
 
-    const handleKeyDown = useCallback(
-        (e: KeyboardEvent) => {
-            if (e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
-                return;
-            }
+    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+        if (!canInsert || e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
+            return;
+        }
 
-            const tag = (e.target as HTMLElement)?.tagName;
+        const tag = (e.target as HTMLElement)?.tagName;
 
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
-                return;
-            }
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+            return;
+        }
 
-            e.preventDefault();
-            setDrawer({ mode: 'create' });
-        },
-        [],
-    );
+        e.preventDefault();
+        setDrawer({ mode: 'create' });
+    }, [canInsert]);
 
     useEffect(() => {
         document.addEventListener('keydown', handleKeyDown);
@@ -157,9 +162,16 @@ export default function AccountsIndex({
                 cell: ({ row }) => (
                     <button
                         type="button"
-                        onClick={() =>
-                            setDrawer({ mode: 'view', account: row.original })
-                        }
+                        onClick={() => {
+                            if (isMobile) {
+                                router.visit(`/accounts/${row.original.id}`);
+                            } else {
+                                setDrawer({
+                                    mode: 'view',
+                                    account: row.original,
+                                });
+                            }
+                        }}
                         className="font-medium hover:underline"
                     >
                         {row.original.name}
@@ -233,7 +245,7 @@ export default function AccountsIndex({
             },
             {
                 id: 'actions',
-                header: '',
+                header: 'Actions',
                 enableSorting: false,
                 enableHiding: false,
                 cell: ({ row }) => {
@@ -241,18 +253,27 @@ export default function AccountsIndex({
 
                     return (
                         <div className="flex items-center justify-end gap-1">
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setDrawer({ mode: 'edit', account })
-                                }
-                                className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                                title="Edit"
-                            >
-                                <Pencil className="h-4 w-4" />
-                            </button>
-                            <DeleteAlertDialog
-                                trigger={
+                            {canUpdate && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (isMobile) {
+                                            router.visit(
+                                                `/accounts/${account.id}/edit`,
+                                            );
+                                        } else {
+                                            setDrawer({ mode: 'edit', account });
+                                        }
+                                    }}
+                                    className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    title="Edit"
+                                >
+                                    <Pencil className="h-4 w-4" />
+                                </button>
+                            )}
+                            {canDelete && (
+                                <DeleteAlertDialog
+                                    trigger={
                                     <button
                                         type="button"
                                         className="inline-flex items-center justify-center rounded-md p-1.5 text-destructive hover:bg-destructive/10"
@@ -269,12 +290,13 @@ export default function AccountsIndex({
                                     )
                                 }
                             />
+                            )}
                         </div>
                     );
                 },
             },
         ],
-        [],
+        [isMobile, canUpdate, canDelete],
     );
 
     return (
@@ -297,21 +319,36 @@ export default function AccountsIndex({
                         />
 
                         {(filters.search || search) && (
-                            <Button type="button" variant="ghost" onClick={resetFilters}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={resetFilters}
+                            >
                                 Reset
                             </Button>
                         )}
 
-                        <Button onClick={() => setDrawer({ mode: 'create' })}>
-                            New account
-                            <kbd className="ml-2 hidden items-center gap-1 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                                <span className="text-xs">N</span>
-                            </kbd>
-                        </Button>
+                        {canInsert && (
+                            <Button
+                                onClick={() => {
+                                    if (isMobile) {
+                                        router.visit('/accounts/create');
+                                    } else {
+                                        setDrawer({ mode: 'create' });
+                                    }
+                                }}
+                            >
+                                New account
+                                <kbd className="ml-2 hidden items-center gap-1 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                                    <span className="text-xs">N</span>
+                                </kbd>
+                            </Button>
+                        )}
                     </div>
                 </div>
 
-                <DataTable tableId="accounts-index-table"
+                <DataTable
+                    tableId="accounts-index-table"
                     columns={columns}
                     data={accounts.data}
                     emptyMessage="No accounts found."
@@ -333,22 +370,24 @@ export default function AccountsIndex({
                                 />
                                 Export
                             </Button>
-                            <DeleteAlertDialog
-                                trigger={
-                                    <Button variant="destructive" size="sm">
-                                        <Trash2
-                                            data-icon="inline-start"
-                                            className="h-4 w-4"
-                                        />
-                                        Delete
-                                    </Button>
-                                }
-                                title="Delete selected accounts?"
-                                description={`This will permanently delete ${selectedAccounts.length} account${selectedAccounts.length > 1 ? 's' : ''}. This action cannot be undone.`}
-                                onConfirm={() =>
-                                    deleteAccounts(selectedAccounts)
-                                }
-                            />
+                            {canDelete && (
+                                <DeleteAlertDialog
+                                    trigger={
+                                        <Button variant="destructive" size="sm">
+                                            <Trash2
+                                                data-icon="inline-start"
+                                                className="h-4 w-4"
+                                            />
+                                            Delete
+                                        </Button>
+                                    }
+                                    title="Delete selected accounts?"
+                                    description={`This will permanently delete ${selectedAccounts.length} account${selectedAccounts.length > 1 ? 's' : ''}. This action cannot be undone.`}
+                                    onConfirm={() =>
+                                        deleteAccounts(selectedAccounts)
+                                    }
+                                />
+                            )}
                         </>
                     }
                 />

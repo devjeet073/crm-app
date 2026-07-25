@@ -10,7 +10,7 @@ test('guests are redirected to the login page', function () {
 });
 
 test('authenticated users can visit the calendar with a default range', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
 
     $this->actingAs($user)
         ->get(route('calendar.index'))
@@ -24,8 +24,8 @@ test('authenticated users can visit the calendar with a default range', function
 });
 
 test('it only returns the current users meetings, calls, and tasks within range', function () {
-    $user = User::factory()->create();
-    $otherUser = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
+    $otherUser = User::factory()->create(['type' => 'admin']);
 
     $from = now()->startOfWeek();
     $to = now()->endOfWeek();
@@ -85,7 +85,7 @@ test('it only returns the current users meetings, calls, and tasks within range'
 });
 
 test('validation rejects an inverted or too-long range', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
 
     $this->actingAs($user)
         ->get(route('calendar.index', ['from' => now()->toISOString(), 'to' => now()->subDay()->toISOString()]))

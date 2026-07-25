@@ -1,7 +1,9 @@
-import { Head, setLayoutProps } from '@inertiajs/react';
+import { Head, router, setLayoutProps } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
 import LeadController from '@/actions/App/Http/Controllers/LeadController';
 import Heading from '@/components/heading';
 import LeadForm from '@/components/leads/lead-form';
+import { Button } from '@/components/ui/button';
 import { index as leadsIndex } from '@/routes/leads';
 import type { BreadcrumbItem, Lead, User } from '@/types';
 
@@ -42,7 +44,15 @@ export default function LeadsEdit({
             <Head title={`Edit ${leadName(lead)}`} />
 
             <div className="flex flex-1 flex-col gap-6 p-4">
-                <Heading title={`Edit ${leadName(lead)}`} />
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <Heading title={`Edit ${leadName(lead)}`} />
+                    <Button
+                        variant="outline"
+                        onClick={() => router.visit(leadsIndex.url())}
+                    >
+                        <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
+                    </Button>
+                </div>
 
                 <LeadForm
                     lead={lead}

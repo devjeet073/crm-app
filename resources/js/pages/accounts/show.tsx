@@ -1,4 +1,4 @@
-import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import AccountController from '@/actions/App/Http/Controllers/AccountController';
 import { AccountDetails } from '@/components/accounts/account-details';
@@ -11,6 +11,7 @@ import type { Account, BreadcrumbItem } from '@/types';
 type PageProps = {
     account: Account;
 };
+import type { Auth } from '@/types';
 
 export default function AccountShow({ account }: PageProps) {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -20,6 +21,10 @@ export default function AccountShow({ account }: PageProps) {
             href: AccountController.show(account),
         },
     ];
+
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const canUpdate = auth.isAdmin || auth.module_permissions?.['Accounts']?.update;
+    const canDelete = auth.isAdmin || auth.module_permissions?.['Accounts']?.delete;
 
     setLayoutProps({ breadcrumbs });
 
@@ -35,26 +40,33 @@ export default function AccountShow({ account }: PageProps) {
                     />
 
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={() => router.visit(accountsIndex.url())}>
+                        <Button
+                            variant="outline"
+                            onClick={() => router.visit(accountsIndex.url())}
+                        >
                             <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
                         </Button>
-                        <Button variant="outline" asChild>
-                            <Link href={AccountController.edit(account)}>
-                                Edit
-                            </Link>
-                        </Button>
-                        <DeleteAlertDialog
-                            trigger={
-                                <Button variant="destructive">Delete</Button>
-                            }
-                            title="Delete account?"
-                            description={`This will permanently delete "${account.name}". This action cannot be undone.`}
-                            onConfirm={() =>
-                                router.delete(
-                                    AccountController.destroy.url(account),
-                                )
-                            }
-                        />
+                        {canUpdate && (
+                            <Button variant="outline" asChild>
+                                <Link href={AccountController.edit(account)}>
+                                    Edit
+                                </Link>
+                            </Button>
+                        )}
+                        {canDelete && (
+                            <DeleteAlertDialog
+                                trigger={
+                                    <Button variant="destructive">Delete</Button>
+                                }
+                                title="Delete account?"
+                                description={`This will permanently delete "${account.name}". This action cannot be undone.`}
+                                onConfirm={() =>
+                                    router.delete(
+                                        AccountController.destroy.url(account),
+                                    )
+                                }
+                            />
+                        )}
                     </div>
                 </div>
 

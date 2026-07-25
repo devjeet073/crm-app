@@ -1,6 +1,8 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
 import AccountForm from '@/components/accounts/account-form';
 import Heading from '@/components/heading';
+import { Button } from '@/components/ui/button';
 import {
     create as accountsCreate,
     index as accountsIndex,
@@ -26,10 +28,15 @@ export default function AccountsCreate({
             <Head title="New account" />
 
             <div className="flex flex-1 flex-col gap-6 p-4">
-                <Heading
-                    title="New account"
-                    description="Add a company or organization record."
-                />
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <Heading
+                        title="New account"
+                        description="Add a company or organization record."
+                    />
+                    <Button variant="outline" onClick={() => router.visit(accountsIndex.url())}>
+                        <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
+                    </Button>
+                </div>
 
                 <AccountForm
                     accountTypes={accountTypes}

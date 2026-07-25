@@ -40,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Inertia::handleExceptionsUsing(function (ExceptionResponse $response) {
             if (in_array($response->statusCode(), [403, 404, 500, 503])) {
-                return $response->render('errors/'.$response->statusCode(), [
+                return $response->render('errors/error', [
                     'status' => $response->statusCode(),
                 ])->withSharedData();
             }

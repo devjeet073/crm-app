@@ -1,4 +1,4 @@
-import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import TaskController from '@/actions/App/Http/Controllers/TaskController';
 import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
@@ -11,6 +11,7 @@ import type { BreadcrumbItem, Task } from '@/types';
 type PageProps = {
     task: Task;
 };
+import type { Auth } from '@/types';
 
 export default function TaskShow({ task }: PageProps) {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -20,6 +21,10 @@ export default function TaskShow({ task }: PageProps) {
             href: TaskController.show(task),
         },
     ];
+
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const canUpdate = auth.isAdmin || auth.module_permissions?.['Tasks']?.update;
+    const canDelete = auth.isAdmin || auth.module_permissions?.['Tasks']?.delete;
 
     setLayoutProps({ breadcrumbs });
 
@@ -35,26 +40,29 @@ export default function TaskShow({ task }: PageProps) {
                     />
 
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={() => router.visit(tasksIndex.url())}>
+                        <Button
+                            variant="outline"
+                            onClick={() => router.visit(tasksIndex.url())}
+                        >
                             <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
                         </Button>
-                        <Button variant="outline" asChild>
-                            <Link href={TaskController.edit(task)}>
-                                Edit
-                            </Link>
-                        </Button>
-                        <DeleteAlertDialog
-                            trigger={
-                                <Button variant="destructive">Delete</Button>
-                            }
-                            title="Delete task?"
-                            description={`This will permanently delete "${task.name ?? `Task #${task.id}`}". This action cannot be undone.`}
-                            onConfirm={() =>
-                                router.delete(
-                                    TaskController.destroy.url(task),
-                                )
-                            }
-                        />
+                        {canUpdate && (
+                            <Button variant="outline" asChild>
+                                <Link href={TaskController.edit(task)}>Edit</Link>
+                            </Button>
+                        )}
+                        {canDelete && (
+                            <DeleteAlertDialog
+                                trigger={
+                                    <Button variant="destructive">Delete</Button>
+                                }
+                                title="Delete task?"
+                                description={`This will permanently delete "${task.name ?? `Task #${task.id}`}". This action cannot be undone.`}
+                                onConfirm={() =>
+                                    router.delete(TaskController.destroy.url(task))
+                                }
+                            />
+                        )}
                     </div>
                 </div>
 

@@ -48,13 +48,16 @@ class HandleInertiaRequests extends Middleware
                         : ucfirst($request->user()->type),
                 ]) : null,
                 'isAdmin' => $request->user()?->isAdmin() ?? false,
-                'module_permissions' => $request->user() ? [
-                    'Accounts' => $request->user()->canViewModule('Accounts'),
-                    'Contacts' => $request->user()->canViewModule('Contacts'),
-                    'Leads' => $request->user()->canViewModule('Leads'),
-                    'Tasks' => $request->user()->canViewModule('Tasks'),
-                    'Documents' => $request->user()->canViewModule('Documents'),
-                ] : null,
+                'module_permissions' => $request->user() ? collect(['Accounts', 'Contacts', 'Leads', 'Tasks', 'Documents'])
+                    ->mapWithKeys(function ($module) use ($request) {
+                        $user = $request->user();
+                        return [$module => [
+                            'view' => $user->canViewModule($module),
+                            'insert' => $user->canInsertModule($module),
+                            'update' => $user->canUpdateModule($module),
+                            'delete' => $user->canDeleteModule($module),
+                        ]];
+                    })->toArray() : null,
             ],
             'sidebarMenu' => $navigationService->getMenuForUser($request->user()),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',

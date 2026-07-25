@@ -1,4 +1,4 @@
-import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
+import { Head, Link, router, setLayoutProps, usePage } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import LeadController from '@/actions/App/Http/Controllers/LeadController';
 import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
@@ -11,6 +11,7 @@ import type { BreadcrumbItem, Lead } from '@/types';
 type PageProps = {
     lead: Lead;
 };
+import type { Auth } from '@/types';
 
 function leadName(lead: Lead): string {
     return (
@@ -26,6 +27,10 @@ export default function LeadShow({ lead }: PageProps) {
         { title: leadName(lead), href: LeadController.show(lead) },
     ];
 
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const canUpdate = auth.isAdmin || auth.module_permissions?.['Leads']?.update;
+    const canDelete = auth.isAdmin || auth.module_permissions?.['Leads']?.delete;
+
     setLayoutProps({ breadcrumbs });
 
     return (
@@ -40,22 +45,29 @@ export default function LeadShow({ lead }: PageProps) {
                     />
 
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={() => router.visit(leadsIndex.url())}>
+                        <Button
+                            variant="outline"
+                            onClick={() => router.visit(leadsIndex.url())}
+                        >
                             <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
                         </Button>
-                        <Button variant="outline" asChild>
-                            <Link href={LeadController.edit(lead)}>Edit</Link>
-                        </Button>
-                        <DeleteAlertDialog
-                            trigger={
-                                <Button variant="destructive">Delete</Button>
-                            }
-                            title="Delete lead?"
-                            description={`This will permanently delete "${leadName(lead)}". This action cannot be undone.`}
-                            onConfirm={() =>
-                                router.delete(LeadController.destroy.url(lead))
-                            }
-                        />
+                        {canUpdate && (
+                            <Button variant="outline" asChild>
+                                <Link href={LeadController.edit(lead)}>Edit</Link>
+                            </Button>
+                        )}
+                        {canDelete && (
+                            <DeleteAlertDialog
+                                trigger={
+                                    <Button variant="destructive">Delete</Button>
+                                }
+                                title="Delete lead?"
+                                description={`This will permanently delete "${leadName(lead)}". This action cannot be undone.`}
+                                onConfirm={() =>
+                                    router.delete(LeadController.destroy.url(lead))
+                                }
+                            />
+                        )}
                     </div>
                 </div>
 

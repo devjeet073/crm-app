@@ -3,26 +3,21 @@ import AccountController from '@/actions/App/Http/Controllers/AccountController'
 import { AccountDetails } from '@/components/accounts/account-details';
 import AccountForm from '@/components/accounts/account-form';
 import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
+import { Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
-    Drawer,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-} from '@/components/ui/drawer';
-import { DrawerResizeHandle } from '@/components/ui/drawer-resize-handle';
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import { SheetResizeHandle } from '@/components/ui/sheet-resize-handle';
 import { useDrawerResize } from '@/hooks/use-drawer-resize';
+
 import { cn } from '@/lib/utils';
 import type { Account } from '@/types';
-
-const WIDTH_PRESETS = [
-    { label: 'Sm', width: 400 },
-    { label: 'Md', width: 560 },
-    { label: 'Lg', width: 720 },
-    { label: 'Xl', width: 800 },
-] as const;
 
 export type AccountDrawerState =
     | { mode: 'create' }
@@ -44,32 +39,44 @@ export function AccountDrawer({
     accountTypes,
     industries,
 }: AccountDrawerProps) {
-    const { width, setWidth, handleMouseDown } = useDrawerResize();
+    const { width, setWidth, handlePointerDown } = useDrawerResize();
 
     return (
-        <Drawer
+        <Sheet
             direction="right"
             open={state !== null}
             onOpenChange={onOpenChange}
         >
-            <DrawerContent className="sm:max-w-none" style={{ width }}>
-                <DrawerResizeHandle onMouseDown={handleMouseDown} />
+            <SheetContent
+                className="sm:max-w-none"
+                style={{ width: width || 720 }}
+            >
+                <SheetResizeHandle onPointerDown={handlePointerDown} />
                 {state?.mode === 'create' && (
                     <>
-                        <DrawerHeader>
+                        <SheetHeader>
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex flex-col gap-0.5">
-                                    <DrawerTitle>New account</DrawerTitle>
-                                    <DrawerDescription>
+                                    <SheetTitle>New account</SheetTitle>
+                                    <SheetDescription>
                                         Add a company or organization record.
-                                    </DrawerDescription>
+                                    </SheetDescription>
                                 </div>
-                                <WidthPresets
-                                    currentWidth={width}
-                                    onSelect={setWidth}
-                                />
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="shrink-0"
+                                    onClick={() =>
+                                        router.visit(
+                                            AccountController.create.url(),
+                                        )
+                                    }
+                                >
+                                    <Maximize2 className="mr-2 h-4 w-4" />
+                                    Full Form
+                                </Button>
                             </div>
-                        </DrawerHeader>
+                        </SheetHeader>
                         <div className="overflow-y-auto px-4 pb-4">
                             <AccountForm
                                 accountTypes={accountTypes}
@@ -82,19 +89,30 @@ export function AccountDrawer({
 
                 {state?.mode === 'edit' && (
                     <>
-                        <DrawerHeader>
+                        <SheetHeader>
                             <div className="flex items-start justify-between gap-4">
-                                <DrawerTitle>
+                                <SheetTitle>
                                     Edit{' '}
                                     {state.account.name ??
                                         `account #${state.account.id}`}
-                                </DrawerTitle>
-                                <WidthPresets
-                                    currentWidth={width}
-                                    onSelect={setWidth}
-                                />
+                                </SheetTitle>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="shrink-0"
+                                    onClick={() =>
+                                        router.visit(
+                                            AccountController.edit.url(
+                                                state.account,
+                                            ),
+                                        )
+                                    }
+                                >
+                                    <Maximize2 className="mr-2 h-4 w-4" />
+                                    Full Form
+                                </Button>
                             </div>
-                        </DrawerHeader>
+                        </SheetHeader>
                         <div className="overflow-y-auto px-4 pb-4">
                             <AccountForm
                                 account={state.account}
@@ -108,29 +126,40 @@ export function AccountDrawer({
 
                 {state?.mode === 'view' && (
                     <>
-                        <DrawerHeader>
+                        <SheetHeader>
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex flex-col gap-0.5">
-                                    <DrawerTitle>
+                                    <SheetTitle>
                                         {state.account.name ??
                                             `Account #${state.account.id}`}
-                                    </DrawerTitle>
+                                    </SheetTitle>
                                     {state.account.type && (
-                                        <DrawerDescription>
+                                        <SheetDescription>
                                             {state.account.type}
-                                        </DrawerDescription>
+                                        </SheetDescription>
                                     )}
                                 </div>
-                                <WidthPresets
-                                    currentWidth={width}
-                                    onSelect={setWidth}
-                                />
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="shrink-0"
+                                    onClick={() =>
+                                        router.visit(
+                                            AccountController.show.url(
+                                                state.account,
+                                            ),
+                                        )
+                                    }
+                                >
+                                    <Maximize2 className="mr-2 h-4 w-4" />
+                                    Full Form
+                                </Button>
                             </div>
-                        </DrawerHeader>
+                        </SheetHeader>
                         <div className="overflow-y-auto px-4 pb-4">
                             <AccountDetails account={state.account} />
                         </div>
-                        <DrawerFooter className="flex-row justify-end">
+                        <SheetFooter className="flex-row justify-end">
                             <DeleteAlertDialog
                                 trigger={
                                     <Button variant="destructive">
@@ -153,38 +182,10 @@ export function AccountDrawer({
                             >
                                 Edit
                             </Button>
-                        </DrawerFooter>
+                        </SheetFooter>
                     </>
                 )}
-            </DrawerContent>
-        </Drawer>
-    );
-}
-
-function WidthPresets({
-    currentWidth,
-    onSelect,
-}: {
-    currentWidth: number;
-    onSelect: (width: number) => void;
-}) {
-    return (
-        <div className="flex shrink-0 items-center gap-0.5 rounded-md border p-0.5">
-            {WIDTH_PRESETS.map((preset) => (
-                <button
-                    key={preset.width}
-                    type="button"
-                    onClick={() => onSelect(preset.width)}
-                    className={cn(
-                        'rounded px-2 py-1 text-xs font-medium transition-colors',
-                        currentWidth === preset.width
-                            ? 'bg-muted text-foreground'
-                            : 'text-muted-foreground hover:text-foreground',
-                    )}
-                >
-                    {preset.label}
-                </button>
-            ))}
-        </div>
+            </SheetContent>
+        </Sheet>
     );
 }

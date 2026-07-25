@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { Download, Pencil, Trash2 } from 'lucide-react';
@@ -13,8 +14,9 @@ import Pagination from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { index as leadsIndex } from '@/routes/leads';
-import type { BreadcrumbItem, Lead, Paginated, User } from '@/types';
+import type { BreadcrumbItem, Lead, Paginated, User, Auth } from '@/types';
 
 type PageProps = {
     leads: Paginated<Lead>;
@@ -51,6 +53,15 @@ export default function LeadsIndex({
     const [search, setSearch] = useState(filters.search ?? '');
     const [drawer, setDrawer] = useState<LeadDrawerState | null>(null);
     const [selectedLeads, setSelectedLeads] = useState<Lead[]>([]);
+    const isMobile = useIsMobile();
+    const { auth } = usePage<{ auth: Auth }>().props;
+
+    const canInsert =
+        auth.isAdmin || auth.module_permissions?.['Leads']?.insert;
+    const canUpdate =
+        auth.isAdmin || auth.module_permissions?.['Leads']?.update;
+    const canDelete =
+        auth.isAdmin || auth.module_permissions?.['Leads']?.delete;
 
     useEffect(() => {
         setSearch(filters.search ?? '');
@@ -139,7 +150,13 @@ export default function LeadsIndex({
 
     const handleKeyDown = useCallback(
         (e: KeyboardEvent) => {
-            if (e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
+            if (
+                !canInsert ||
+                e.key !== 'n' ||
+                e.metaKey ||
+                e.ctrlKey ||
+                e.altKey
+            ) {
                 return;
             }
 
@@ -152,7 +169,7 @@ export default function LeadsIndex({
             e.preventDefault();
             setDrawer({ mode: 'create' });
         },
-        [],
+        [canInsert],
     );
 
     useEffect(() => {
@@ -177,9 +194,13 @@ export default function LeadsIndex({
                 cell: ({ row }) => (
                     <button
                         type="button"
-                        onClick={() =>
-                            setDrawer({ mode: 'view', lead: row.original })
-                        }
+                        onClick={() => {
+                            if (isMobile) {
+                                router.visit(`/leads/${row.original.id}`);
+                            } else {
+                                setDrawer({ mode: 'view', lead: row.original });
+                            }
+                        }}
                         className="font-medium hover:underline"
                     >
                         {leadName(row.original)}
@@ -242,7 +263,7 @@ export default function LeadsIndex({
                         title="Created"
                     />
                 ),
-                meta: { label: 'Created' },
+                meta: { label: 'Created', isDateTime: true },
                 cell: ({ row }) => (
                     <span className="text-muted-foreground">
                         {format(
@@ -254,7 +275,7 @@ export default function LeadsIndex({
             },
             {
                 id: 'actions',
-                header: '',
+                header: 'Actions',
                 enableSorting: false,
                 enableHiding: false,
                 cell: ({ row }) => {
@@ -262,40 +283,50 @@ export default function LeadsIndex({
 
                     return (
                         <div className="flex items-center justify-end gap-1">
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setDrawer({ mode: 'edit', lead })
-                                }
-                                className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                                title="Edit"
-                            >
-                                <Pencil className="h-4 w-4" />
-                            </button>
-                            <DeleteAlertDialog
-                                trigger={
-                                    <button
-                                        type="button"
-                                        className="inline-flex items-center justify-center rounded-md p-1.5 text-destructive hover:bg-destructive/10"
-                                        title="Delete"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
-                                }
-                                title="Delete lead?"
-                                description={`This will permanently delete "${leadName(lead)}". This action cannot be undone.`}
-                                onConfirm={() =>
-                                    router.delete(
-                                        LeadController.destroy.url(lead),
-                                    )
-                                }
-                            />
+                            {canUpdate && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (isMobile) {
+                                            router.visit(
+                                                `/leads/${lead.id}/edit`,
+                                            );
+                                        } else {
+                                            setDrawer({ mode: 'edit', lead });
+                                        }
+                                    }}
+                                    className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    title="Edit"
+                                >
+                                    <Pencil className="h-4 w-4" />
+                                </button>
+                            )}
+                            {canDelete && (
+                                <DeleteAlertDialog
+                                    trigger={
+                                        <button
+                                            type="button"
+                                            className="inline-flex items-center justify-center rounded-md p-1.5 text-destructive hover:bg-destructive/10"
+                                            title="Delete"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    }
+                                    title="Delete lead?"
+                                    description={`This will permanently delete "${leadName(lead)}". This action cannot be undone.`}
+                                    onConfirm={() =>
+                                        router.delete(
+                                            LeadController.destroy.url(lead),
+                                        )
+                                    }
+                                />
+                            )}
                         </div>
                     );
                 },
             },
         ],
-        [],
+        [isMobile, canUpdate, canDelete],
     );
 
     return (
@@ -318,21 +349,36 @@ export default function LeadsIndex({
                         />
 
                         {(filters.search || search) && (
-                            <Button type="button" variant="ghost" onClick={resetFilters}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={resetFilters}
+                            >
                                 Reset
                             </Button>
                         )}
 
-                        <Button onClick={() => setDrawer({ mode: 'create' })}>
-                            New lead
-                            <kbd className="ml-2 hidden items-center gap-1 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                                <span className="text-xs">N</span>
-                            </kbd>
-                        </Button>
+                        {canInsert && (
+                            <Button
+                                onClick={() => {
+                                    if (isMobile) {
+                                        router.visit('/leads/create');
+                                    } else {
+                                        setDrawer({ mode: 'create' });
+                                    }
+                                }}
+                            >
+                                New lead
+                                <kbd className="ml-2 hidden items-center gap-1 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                                    <span className="text-xs">N</span>
+                                </kbd>
+                            </Button>
+                        )}
                     </div>
                 </div>
 
-                <DataTable tableId="leads-index-table"
+                <DataTable
+                    tableId="leads-index-table"
                     columns={columns}
                     data={leads.data}
                     emptyMessage="No leads found."
@@ -354,20 +400,22 @@ export default function LeadsIndex({
                                 />
                                 Export
                             </Button>
-                            <DeleteAlertDialog
-                                trigger={
-                                    <Button variant="destructive" size="sm">
-                                        <Trash2
-                                            data-icon="inline-start"
-                                            className="h-4 w-4"
-                                        />
-                                        Delete
-                                    </Button>
-                                }
-                                title="Delete selected leads?"
-                                description={`This will permanently delete ${selectedLeads.length} lead${selectedLeads.length > 1 ? 's' : ''}. This action cannot be undone.`}
-                                onConfirm={() => deleteLeads(selectedLeads)}
-                            />
+                            {canDelete && (
+                                <DeleteAlertDialog
+                                    trigger={
+                                        <Button variant="destructive" size="sm">
+                                            <Trash2
+                                                data-icon="inline-start"
+                                                className="h-4 w-4"
+                                            />
+                                            Delete
+                                        </Button>
+                                    }
+                                    title="Delete selected leads?"
+                                    description={`This will permanently delete ${selectedLeads.length} lead${selectedLeads.length > 1 ? 's' : ''}. This action cannot be undone.`}
+                                    onConfirm={() => deleteLeads(selectedLeads)}
+                                />
+                            )}
                         </>
                     }
                 />

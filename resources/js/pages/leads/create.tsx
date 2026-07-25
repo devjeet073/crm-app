@@ -1,6 +1,8 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
 import Heading from '@/components/heading';
 import LeadForm from '@/components/leads/lead-form';
+import { Button } from '@/components/ui/button';
 import { create as leadsCreate, index as leadsIndex } from '@/routes/leads';
 import type { BreadcrumbItem, User } from '@/types';
 
@@ -29,10 +31,15 @@ export default function LeadsCreate({
             <Head title="New lead" />
 
             <div className="flex flex-1 flex-col gap-6 p-4">
-                <Heading
-                    title="New lead"
-                    description="Capture an unqualified prospect."
-                />
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <Heading
+                        title="New lead"
+                        description="Capture an unqualified prospect."
+                    />
+                    <Button variant="outline" onClick={() => router.visit(leadsIndex.url())}>
+                        <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
+                    </Button>
+                </div>
 
                 <LeadForm
                     users={users}

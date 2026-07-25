@@ -69,7 +69,7 @@ class RoleController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Role updated.')]);
 
-        return to_route('roles.show', $role);
+        return to_route('roles.edit', $role);
     }
 
     public function destroy(Role $role): RedirectResponse

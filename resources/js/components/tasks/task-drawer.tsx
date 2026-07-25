@@ -5,14 +5,14 @@ import { TaskDetails } from '@/components/tasks/task-details';
 import TaskForm from '@/components/tasks/task-form';
 import { Button } from '@/components/ui/button';
 import {
-    Drawer,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-} from '@/components/ui/drawer';
-import { DrawerResizeHandle } from '@/components/ui/drawer-resize-handle';
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import { SheetResizeHandle } from '@/components/ui/sheet-resize-handle';
 import { useDrawerResize } from '@/hooks/use-drawer-resize';
 import type { Task } from '@/types';
 
@@ -40,24 +40,24 @@ export function TaskDrawer({
     statuses,
     priorities,
 }: TaskDrawerProps) {
-    const { width, handleMouseDown } = useDrawerResize();
+    const { width, handlePointerDown } = useDrawerResize();
 
     return (
-        <Drawer
+        <Sheet
             direction="right"
             open={state !== null}
             onOpenChange={onOpenChange}
         >
-            <DrawerContent className="sm:max-w-none" style={{ width }}>
-                <DrawerResizeHandle onMouseDown={handleMouseDown} />
+            <SheetContent className="sm:max-w-none" style={{ width }}>
+                <SheetResizeHandle onPointerDown={handlePointerDown} />
                 {state?.mode === 'create' && (
                     <>
-                        <DrawerHeader>
-                            <DrawerTitle>New task</DrawerTitle>
-                            <DrawerDescription>
+                        <SheetHeader>
+                            <SheetTitle>New task</SheetTitle>
+                            <SheetDescription>
                                 Create a new task.
-                            </DrawerDescription>
-                        </DrawerHeader>
+                            </SheetDescription>
+                        </SheetHeader>
                         <div className="overflow-y-auto px-4 pb-4">
                             <TaskForm
                                 statuses={statuses}
@@ -70,11 +70,11 @@ export function TaskDrawer({
 
                 {state?.mode === 'edit' && (
                     <>
-                        <DrawerHeader>
-                            <DrawerTitle>
+                        <SheetHeader>
+                            <SheetTitle>
                                 Edit {taskName(state.task)}
-                            </DrawerTitle>
-                        </DrawerHeader>
+                            </SheetTitle>
+                        </SheetHeader>
                         <div className="overflow-y-auto px-4 pb-4">
                             <TaskForm
                                 task={state.task}
@@ -88,20 +88,18 @@ export function TaskDrawer({
 
                 {state?.mode === 'view' && (
                     <>
-                        <DrawerHeader>
-                            <DrawerTitle>
-                                {taskName(state.task)}
-                            </DrawerTitle>
+                        <SheetHeader>
+                            <SheetTitle>{taskName(state.task)}</SheetTitle>
                             {state.task.status && (
-                                <DrawerDescription>
+                                <SheetDescription>
                                     {state.task.status}
-                                </DrawerDescription>
+                                </SheetDescription>
                             )}
-                        </DrawerHeader>
+                        </SheetHeader>
                         <div className="overflow-y-auto px-4 pb-4">
                             <TaskDetails task={state.task} />
                         </div>
-                        <DrawerFooter className="flex-row justify-end">
+                        <SheetFooter className="flex-row justify-end">
                             <DeleteAlertDialog
                                 trigger={
                                     <Button variant="destructive">
@@ -112,9 +110,7 @@ export function TaskDrawer({
                                 description={`This will permanently delete "${taskName(state.task)}". This action cannot be undone.`}
                                 onConfirm={() =>
                                     router.delete(
-                                        TaskController.destroy.url(
-                                            state.task,
-                                        ),
+                                        TaskController.destroy.url(state.task),
                                     )
                                 }
                             />
@@ -124,10 +120,10 @@ export function TaskDrawer({
                             >
                                 Edit
                             </Button>
-                        </DrawerFooter>
+                        </SheetFooter>
                     </>
                 )}
-            </DrawerContent>
-        </Drawer>
+            </SheetContent>
+        </Sheet>
     );
 }

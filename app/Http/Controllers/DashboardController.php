@@ -15,30 +15,38 @@ class DashboardController extends Controller
 {
     public function index(Request $request): Response
     {
+        $user = $request->user();
+        $isAdmin = $user->isAdmin();
+
+        $canViewAccounts = $isAdmin || $user->canViewModule('Accounts');
+        $canViewLeads = $isAdmin || $user->canViewModule('Leads');
+        $canViewTasks = $isAdmin || $user->canViewModule('Tasks');
+        $canViewDocuments = $isAdmin || $user->canViewModule('Documents');
+
         $stats = [
-            'accounts' => Account::count(),
-            'leads' => Lead::count(),
-            'tasks' => Task::where('status', '!=', 'Completed')->count(),
-            'documents' => Document::count(),
+            'accounts' => $canViewAccounts ? Account::count() : 0,
+            'leads' => $canViewLeads ? Lead::count() : 0,
+            'tasks' => $canViewTasks ? Task::where('status', '!=', 'Completed')->count() : 0,
+            'documents' => $canViewDocuments ? Document::count() : 0,
         ];
 
         $startDate = Carbon::now()->subDays(89)->startOfDay();
 
         // Group by date efficiently using DB queries
-        $leads = Lead::where('created_at', '>=', $startDate)
+        $leads = $canViewLeads ? Lead::where('created_at', '>=', $startDate)
             ->selectRaw('DATE(created_at) as date, count(*) as count')
             ->groupBy('date')
-            ->pluck('count', 'date');
+            ->pluck('count', 'date') : collect();
 
-        $accounts = Account::where('created_at', '>=', $startDate)
+        $accounts = $canViewAccounts ? Account::where('created_at', '>=', $startDate)
             ->selectRaw('DATE(created_at) as date, count(*) as count')
             ->groupBy('date')
-            ->pluck('count', 'date');
+            ->pluck('count', 'date') : collect();
 
-        $tasks = Task::where('created_at', '>=', $startDate)
+        $tasks = $canViewTasks ? Task::where('created_at', '>=', $startDate)
             ->selectRaw('DATE(created_at) as date, count(*) as count')
             ->groupBy('date')
-            ->pluck('count', 'date');
+            ->pluck('count', 'date') : collect();
 
         $graphData = [];
         for ($i = 89; $i >= 0; $i--) {

@@ -41,32 +41,12 @@ class NavigationService
                         'href' => '/accounts',
                         'icon' => 'Building2',
                         'permission' => 'Accounts',
-                        'items' => [
-                            [
-                                'title' => 'All Accounts',
-                                'href' => '/accounts',
-                            ],
-                            [
-                                'title' => 'Create Account',
-                                'href' => '/accounts/create',
-                            ],
-                        ],
                     ],
                     [
                         'title' => 'Leads',
                         'href' => '/leads',
                         'icon' => 'UserPlus',
                         'permission' => 'Leads',
-                        'items' => [
-                            [
-                                'title' => 'All Leads',
-                                'href' => '/leads',
-                            ],
-                            [
-                                'title' => 'Create Lead',
-                                'href' => '/leads/create',
-                            ],
-                        ],
                     ],
                     [
                         'title' => 'Tasks',

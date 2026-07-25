@@ -44,7 +44,7 @@ export function KanbanCard({ task, index, onTaskClick }: KanbanCardProps) {
                     }`}
                 >
                     <div className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-medium leading-none">
+                        <span className="text-sm leading-none font-medium">
                             {taskName(task)}
                         </span>
                     </div>

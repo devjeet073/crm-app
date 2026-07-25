@@ -129,6 +129,39 @@ class User extends Authenticatable implements PasskeyUser
         return in_array($level, ['own', 'team', 'yes', 'all'], true);
     }
 
+    public function canInsertModule(string $module): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $level = $this->effectiveModulePermission($module, 'insert');
+
+        return in_array($level, ['own', 'team', 'yes', 'all'], true);
+    }
+
+    public function canUpdateModule(string $module): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $level = $this->effectiveModulePermission($module, 'update');
+
+        return in_array($level, ['own', 'team', 'yes', 'all'], true);
+    }
+
+    public function canDeleteModule(string $module): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $level = $this->effectiveModulePermission($module, 'delete');
+
+        return in_array($level, ['own', 'team', 'yes', 'all'], true);
+    }
+
     // ── Activity relationships ─────────────────────────────────────────────
 
     public function calls(): BelongsToMany

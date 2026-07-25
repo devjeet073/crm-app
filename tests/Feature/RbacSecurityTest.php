@@ -44,7 +44,7 @@ test('roles and teams assign/revoke endpoints work', function () {
     $this->actingAs($adminUser);
 
     // Assign User to Role
-    $this->post(route('roles.assignUser', $role), ['user_id' => $user->id])
+    $this->post(route('roles.assignUser', $role), ['user_ids' => [$user->id]])
         ->assertRedirect();
     expect($role->users()->where('users.id', $user->id)->exists())->toBeTrue();
 
@@ -65,7 +65,7 @@ test('roles and teams assign/revoke endpoints work', function () {
 });
 
 test('effective permissions resolver handles priority hierarchy', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
 
     // Create direct role (low priority)
     $lowRole = Role::create([

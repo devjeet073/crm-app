@@ -7,8 +7,20 @@ import Pagination from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { index as configsIndex, show as configsShow, create as configsCreate, destroy as configsDestroy } from '@/routes/email-configurations';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import {
+    index as configsIndex,
+    show as configsShow,
+    create as configsCreate,
+    destroy as configsDestroy,
+} from '@/routes/email-configurations';
 import type { BreadcrumbItem, Paginated } from '@/types';
 
 export type EmailConfiguration = {
@@ -32,9 +44,14 @@ type PageProps = {
     filters: { search: string | null };
 };
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Email Configurations', href: configsIndex() }];
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Email Configurations', href: configsIndex() },
+];
 
-export default function EmailConfigurationsIndex({ configs, filters }: PageProps) {
+export default function EmailConfigurationsIndex({
+    configs,
+    filters,
+}: PageProps) {
     const [search, setSearch] = useState(filters.search ?? '');
 
     useEffect(() => {
@@ -45,29 +62,30 @@ export default function EmailConfigurationsIndex({ configs, filters }: PageProps
         }
 
         const t = window.setTimeout(() => {
-            router.get(configsIndex.url(), { search: next || undefined }, { preserveState: true, replace: true });
+            router.get(
+                configsIndex.url(),
+                { search: next || undefined },
+                { preserveState: true, replace: true },
+            );
         }, 350);
 
         return () => window.clearTimeout(t);
     }, [search, filters.search]);
 
-    const handleKeyDown = useCallback(
-        (e: KeyboardEvent) => {
-            if (e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
-                return;
-            }
+    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+        if (e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
+            return;
+        }
 
-            const tag = (e.target as HTMLElement)?.tagName;
+        const tag = (e.target as HTMLElement)?.tagName;
 
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
-                return;
-            }
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+            return;
+        }
 
-            e.preventDefault();
-            router.visit(configsCreate.url());
-        },
-        [],
-    );
+        e.preventDefault();
+        router.visit(configsCreate.url());
+    }, []);
 
     useEffect(() => {
         document.addEventListener('keydown', handleKeyDown);
@@ -111,14 +129,21 @@ export default function EmailConfigurationsIndex({ configs, filters }: PageProps
                                 <TableHead>Mailer</TableHead>
                                 <TableHead>From</TableHead>
                                 <TableHead>Host</TableHead>
-                                <TableHead className="text-center">Status</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead className="text-center">
+                                    Status
+                                </TableHead>
+                                <TableHead className="text-right">
+                                    Actions
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {configs.data.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
+                                    <TableCell
+                                        colSpan={6}
+                                        className="py-8 text-center text-muted-foreground"
+                                    >
                                         No configurations found.
                                     </TableCell>
                                 </TableRow>
@@ -134,43 +159,73 @@ export default function EmailConfigurationsIndex({ configs, filters }: PageProps
                                             {config.name}
                                         </a>
                                     </TableCell>
-                                    <TableCell className="text-muted-foreground uppercase text-xs">
+                                    <TableCell className="text-xs text-muted-foreground uppercase">
                                         {config.mailer}
                                     </TableCell>
                                     <TableCell className="text-muted-foreground">
                                         {config.from_address}
-                                        {config.from_name ? ` (${config.from_name})` : ''}
+                                        {config.from_name
+                                            ? ` (${config.from_name})`
+                                            : ''}
                                     </TableCell>
                                     <TableCell className="text-muted-foreground">
-                                        {config.host ? `${config.host}:${config.port}` : '—'}
+                                        {config.host
+                                            ? `${config.host}:${config.port}`
+                                            : '—'}
                                     </TableCell>
                                     <TableCell className="text-center">
                                         {config.is_active ? (
-                                            <Badge variant="default" className="gap-1">
-                                                <CheckCircle2 className="h-3 w-3" /> Active
+                                            <Badge
+                                                variant="default"
+                                                className="gap-1"
+                                            >
+                                                <CheckCircle2 className="h-3 w-3" />{' '}
+                                                Active
                                             </Badge>
                                         ) : (
-                                            <Badge variant="secondary" className="gap-1">
-                                                <XCircle className="h-3 w-3" /> Inactive
+                                            <Badge
+                                                variant="secondary"
+                                                className="gap-1"
+                                            >
+                                                <XCircle className="h-3 w-3" />{' '}
+                                                Inactive
                                             </Badge>
                                         )}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-1">
-                                            <Button variant="ghost" size="sm" asChild>
-                                                <a href={configsShow.url(config)}>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                asChild
+                                            >
+                                                <a
+                                                    href={configsShow.url(
+                                                        config,
+                                                    )}
+                                                >
                                                     <Eye className="h-4 w-4" />
                                                 </a>
                                             </Button>
                                             <DeleteAlertDialog
                                                 trigger={
-                                                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-destructive hover:text-destructive"
+                                                    >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 }
                                                 title={`Delete "${config.name}"?`}
                                                 description="This will remove the email configuration permanently."
-                                                onConfirm={() => router.delete(configsDestroy.url(config))}
+                                                onConfirm={() =>
+                                                    router.delete(
+                                                        configsDestroy.url(
+                                                            config,
+                                                        ),
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </TableCell>

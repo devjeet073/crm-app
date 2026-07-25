@@ -24,7 +24,12 @@ interface FilterGroupProps {
     onChange: (values: string[]) => void;
 }
 
-export function FilterGroup({ title, options, selectedValues, onChange }: FilterGroupProps) {
+export function FilterGroup({
+    title,
+    options,
+    selectedValues,
+    onChange,
+}: FilterGroupProps) {
     const handleToggle = (value: string) => {
         const next = selectedValues.includes(value)
             ? selectedValues.filter((v) => v !== value)
@@ -34,10 +39,13 @@ export function FilterGroup({ title, options, selectedValues, onChange }: Filter
 
     return (
         <div className="space-y-3">
-            <h4 className="font-medium text-sm leading-none">{title}</h4>
+            <h4 className="text-sm leading-none font-medium">{title}</h4>
             <div className="space-y-2">
                 {options.map((option) => (
-                    <div key={option.value} className="flex items-center space-x-2">
+                    <div
+                        key={option.value}
+                        className="flex items-center space-x-2"
+                    >
                         <Checkbox
                             id={`${title}-${option.value}`}
                             checked={selectedValues.includes(option.value)}
@@ -45,7 +53,7 @@ export function FilterGroup({ title, options, selectedValues, onChange }: Filter
                         />
                         <Label
                             htmlFor={`${title}-${option.value}`}
-                            className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            className="text-sm leading-none font-normal peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
                             {option.label}
                         </Label>
@@ -63,12 +71,22 @@ interface FilterPanelProps {
     filterOptions?: Record<string, FilterOption[]>;
 }
 
-export function FilterPanel({ filters, updateFilter, clearAllFilters, filterOptions }: FilterPanelProps) {
+export function FilterPanel({
+    filters,
+    updateFilter,
+    clearAllFilters,
+    filterOptions,
+}: FilterPanelProps) {
     return (
         <div className="w-full space-y-6">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Filters</h3>
-                {(Object.values(filters).some(v => v !== null && v !== '' && (Array.isArray(v) ? v.length > 0 : true))) && (
+                {Object.values(filters).some(
+                    (v) =>
+                        v !== null &&
+                        v !== '' &&
+                        (Array.isArray(v) ? v.length > 0 : true),
+                ) && (
                     <Button variant="ghost" size="sm" onClick={clearAllFilters}>
                         Clear All
                     </Button>
@@ -78,7 +96,7 @@ export function FilterPanel({ filters, updateFilter, clearAllFilters, filterOpti
             <div className="space-y-2">
                 <Label htmlFor="search">Search</Label>
                 <div className="relative">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute top-2.5 left-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         id="search"
                         type="search"
@@ -104,13 +122,19 @@ export function FilterPanel({ filters, updateFilter, clearAllFilters, filterOpti
     );
 }
 
-export function ActiveFilters({ filters, removeFilter }: { filters: Record<string, any>, removeFilter: (k: string, v?: any) => void }) {
+export function ActiveFilters({
+    filters,
+    removeFilter,
+}: {
+    filters: Record<string, any>;
+    removeFilter: (k: string, v?: any) => void;
+}) {
     const activeTags: { key: string; value: any; label: string }[] = [];
-    
+
     Object.entries(filters).forEach(([key, value]) => {
         if (!value) {
-return;
-}
+            return;
+        }
 
         if (key === 'search' && typeof value === 'string' && value.length > 0) {
             activeTags.push({ key, value, label: `Search: ${value}` });
@@ -124,18 +148,24 @@ return;
     });
 
     if (activeTags.length === 0) {
-return null;
-}
+        return null;
+    }
 
     return (
         <div className="flex flex-wrap items-center gap-2 pb-4">
-            <span className="text-sm text-muted-foreground">Active filters:</span>
+            <span className="text-sm text-muted-foreground">
+                Active filters:
+            </span>
             {activeTags.map((tag) => (
-                <Badge key={`${tag.key}-${tag.value}`} variant="secondary" className="gap-1">
+                <Badge
+                    key={`${tag.key}-${tag.value}`}
+                    variant="secondary"
+                    className="gap-1"
+                >
                     {tag.label}
                     <button
                         type="button"
-                        className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        className="ml-1 rounded-full ring-offset-background outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                         onClick={() => removeFilter(tag.key, tag.value)}
                     >
                         <X className="h-3 w-3" />

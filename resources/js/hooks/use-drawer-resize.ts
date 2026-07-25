@@ -1,13 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const STORAGE_KEY = 'drawer-width';
-const DEFAULT_WIDTH = 384;
+const STORAGE_KEY = 'drawer-width-v2';
 const MIN_WIDTH = 320;
-const MAX_WIDTH = 800;
+function getDefaultWidth(): number {
+    return typeof window !== 'undefined'
+        ? Math.floor(window.innerWidth * 0.45)
+        : 600;
+}
+
+function getMaxWidth(): number {
+    return typeof window !== 'undefined'
+        ? Math.floor(window.innerWidth * 0.9)
+        : 1200;
+}
 
 function getStoredWidth(): number {
     if (typeof window === 'undefined') {
-        return DEFAULT_WIDTH;
+        return getDefaultWidth();
     }
 
     try {
@@ -15,8 +24,9 @@ function getStoredWidth(): number {
 
         if (stored) {
             const parsed = parseInt(stored, 10);
+            const max = getMaxWidth();
 
-            if (!isNaN(parsed) && parsed >= MIN_WIDTH && parsed <= MAX_WIDTH) {
+            if (!isNaN(parsed) && parsed >= MIN_WIDTH && parsed <= max) {
                 return parsed;
             }
         }
@@ -24,7 +34,7 @@ function getStoredWidth(): number {
         // ignore
     }
 
-    return DEFAULT_WIDTH;
+    return getDefaultWidth();
 }
 
 export function useDrawerResize() {
@@ -38,47 +48,66 @@ export function useDrawerResize() {
         widthRef.current = width;
     });
 
-    const handleMouseMove = useCallback((e: MouseEvent) => {
+    const SNAP_POINTS = [400, 560, 720, 960, 1200];
+
+    const handlePointerMove = useCallback((e: PointerEvent) => {
         if (!isDragging.current) {
             return;
         }
 
         const delta = startX.current - e.clientX;
-        const newWidth = Math.min(
-            MAX_WIDTH,
+        const targetWidth = Math.min(
+            getMaxWidth(),
             Math.max(MIN_WIDTH, startWidth.current + delta),
         );
+
+        // Snap to closest snap point within a threshold
+        const snapDistance = 30; // 30px threshold for snapping
+        let newWidth = targetWidth;
+        
+        for (const point of SNAP_POINTS) {
+            if (Math.abs(targetWidth - point) < snapDistance) {
+                newWidth = point;
+                break;
+            }
+        }
+
         setWidth(newWidth);
     }, []);
 
-    const handleMouseUpRef = useRef<() => void>(() => {
+    const handlePointerUpRef = useRef<() => void>(() => {
         isDragging.current = false;
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
         localStorage.setItem(STORAGE_KEY, String(widthRef.current));
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUpRef.current);
+        document.removeEventListener('pointermove', handlePointerMove);
+        document.removeEventListener('pointerup', handlePointerUpRef.current);
     });
 
-    const handleMouseDown = useCallback(
-        (e: React.MouseEvent) => {
+    const handlePointerDown = useCallback(
+        (e: React.PointerEvent) => {
             e.preventDefault();
+            e.stopPropagation();
+            
+            // Critical: capture the pointer so events don't get lost when mouse moves outside
+            (e.target as HTMLElement).setPointerCapture(e.pointerId);
+            
             isDragging.current = true;
             startX.current = e.clientX;
             startWidth.current = widthRef.current;
             document.body.style.cursor = 'col-resize';
             document.body.style.userSelect = 'none';
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', handleMouseUpRef.current);
+            document.addEventListener('pointermove', handlePointerMove);
+            document.addEventListener('pointerup', handlePointerUpRef.current);
         },
-        [handleMouseMove],
+        [handlePointerMove],
     );
 
     const setDrawerWidth = useCallback((newWidth: number) => {
-        const clamped = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, newWidth));
+        const clamped = Math.min(getMaxWidth(), Math.max(MIN_WIDTH, newWidth));
         setWidth(clamped);
         localStorage.setItem(STORAGE_KEY, String(clamped));
     }, []);
 
-    return { width, setWidth: setDrawerWidth, handleMouseDown };
+    return { width, setWidth: setDrawerWidth, handlePointerDown };
 }

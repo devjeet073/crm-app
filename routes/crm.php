@@ -128,7 +128,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('users/search', function (Request $request) {
         if ($id = $request->input('id')) {
-            $user = User::find($id, ['id', 'name', 'email']);
+            $user = User::find($id, ['id', 'name', 'email', 'avatar_url', 'avatar_color']);
 
             return response()->json(['users' => $user ? [$user] : [], 'hasMore' => false]);
         }
@@ -147,7 +147,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->orderBy('name')
             ->offset(($page - 1) * $perPage)
             ->limit($perPage)
-            ->get(['id', 'name', 'email']);
+            ->get(['id', 'name', 'email', 'avatar_url', 'avatar_color']);
 
         $hasMore = $query->count() > $page * $perPage;
 
@@ -155,18 +155,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('users.search');
 
     // ── CRM entities ────────────────────────────────────────────────────────
-    Route::delete('leads/bulk', [LeadController::class, 'bulkDestroy'])->name('leads.bulkDestroy');
-    Route::delete('accounts/bulk', [AccountController::class, 'bulkDestroy'])->name('accounts.bulkDestroy');
-    Route::resource('accounts', AccountController::class);
-    Route::resource('leads', LeadController::class);
-    Route::get('tasks/page', [TaskController::class, 'page'])->name('tasks.page');
-    Route::resource('tasks', TaskController::class);
-    Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
+    Route::middleware('check-module:Leads')->group(function () {
+        Route::delete('leads/bulk', [LeadController::class, 'bulkDestroy'])->name('leads.bulkDestroy');
+        Route::resource('leads', LeadController::class);
+    });
+
+    Route::middleware('check-module:Accounts')->group(function () {
+        Route::delete('accounts/bulk', [AccountController::class, 'bulkDestroy'])->name('accounts.bulkDestroy');
+        Route::resource('accounts', AccountController::class);
+    });
+
+    Route::middleware('check-module:Tasks')->group(function () {
+        Route::get('tasks/page', [TaskController::class, 'page'])->name('tasks.page');
+        Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
+        Route::resource('tasks', TaskController::class);
+    });
+
     // ── Document management ──────────────────────────────────────────────────
-    Route::delete('documents/bulk', [DocumentController::class, 'bulkDestroy'])->name('documents.bulkDestroy');
-    Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.file.download');
-    Route::resource('documents', DocumentController::class);
-    Route::resource('document-folders', DocumentFolderController::class)->except(['show']);
+    Route::middleware('check-module:Documents')->group(function () {
+        Route::delete('documents/bulk', [DocumentController::class, 'bulkDestroy'])->name('documents.bulkDestroy');
+        Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.file.download');
+        Route::resource('documents', DocumentController::class);
+        Route::resource('document-folders', DocumentFolderController::class)->except(['show']);
+    });
 
     // ── User management (admin: full CRUD; any user: own show/edit) ─────────
     Route::resource('users', UserController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);

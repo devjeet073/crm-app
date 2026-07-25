@@ -2,7 +2,13 @@ import { Loader2, Check, ChevronDown, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
-export type Option = { value: string; label: string };
+import { getInitials } from '@/lib/utils';
+export type Option = {
+    value: string;
+    label: string;
+    avatar_url?: string | null;
+    avatar_color?: string | null;
+};
 
 type ResourceSelectProps = {
     value: string;
@@ -26,7 +32,9 @@ export default function ResourceSelect({
     mapItem = (item) => ({ value: String(item.id), label: item.name }),
 }: ResourceSelectProps) {
     const [items, setItems] = useState<Option[]>([]);
-    const [selectedItem, setSelectedItem] = useState<Option | null>(initialItem);
+    const [selectedItem, setSelectedItem] = useState<Option | null>(
+        initialItem,
+    );
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(false);
     const [inputValue, setInputValue] = useState('');
@@ -54,13 +62,17 @@ export default function ResourceSelect({
                     params.set('search', searchTerm);
                 }
 
-                const response = await fetch(`${searchUrl}?${params.toString()}`);
+                const response = await fetch(
+                    `${searchUrl}?${params.toString()}`,
+                );
                 const data = await response.json();
 
                 const rawList = responseKey ? data[responseKey] : data;
                 const newItems: Option[] = (rawList || []).map(mapItem);
 
-                setItems((prev) => (append ? [...prev, ...newItems] : newItems));
+                setItems((prev) =>
+                    append ? [...prev, ...newItems] : newItems,
+                );
                 setHasMore(!!data.hasMore);
             } catch {
                 // silently fail
@@ -112,7 +124,9 @@ export default function ResourceSelect({
         async function fetchSingle() {
             try {
                 const params = new URLSearchParams({ id: value });
-                const response = await fetch(`${searchUrl}?${params.toString()}`);
+                const response = await fetch(
+                    `${searchUrl}?${params.toString()}`,
+                );
                 const data = await response.json();
                 const rawList = responseKey ? data[responseKey] : data;
 
@@ -207,7 +221,7 @@ export default function ResourceSelect({
                     ref={inputRef}
                     id={id}
                     type="text"
-                    value={isOpen ? inputValue : selectedItem?.label ?? ''}
+                    value={isOpen ? inputValue : (selectedItem?.label ?? '')}
                     placeholder={selectedItem ? '' : placeholder}
                     className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 pr-8 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                     onChange={handleInputChange}
@@ -265,7 +279,7 @@ export default function ResourceSelect({
                                 key={item.value}
                                 type="button"
                                 className={cn(
-                                    'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none select-none text-left',
+                                    'flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm outline-none select-none',
                                     highlightedIndex === index
                                         ? 'bg-accent text-accent-foreground'
                                         : 'hover:bg-accent hover:text-accent-foreground',
@@ -284,6 +298,24 @@ export default function ResourceSelect({
                                             : 'opacity-0',
                                     )}
                                 />
+                                {item.avatar_color && (
+                                    <div
+                                        className="flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] font-medium text-white"
+                                        style={{
+                                            backgroundColor: item.avatar_color,
+                                        }}
+                                    >
+                                        {item.avatar_url ? (
+                                            <img
+                                                src={item.avatar_url}
+                                                alt=""
+                                                className="h-full w-full object-cover"
+                                            />
+                                        ) : (
+                                            getInitials(item.label)
+                                        )}
+                                    </div>
+                                )}
                                 {item.label}
                             </button>
                         ))}

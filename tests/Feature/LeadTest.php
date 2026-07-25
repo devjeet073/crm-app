@@ -8,7 +8,7 @@ test('guests are redirected to the login page', function () {
 });
 
 test('authenticated users can list leads', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     Lead::factory(3)->create();
 
     $this->actingAs($user)
@@ -21,7 +21,7 @@ test('authenticated users can list leads', function () {
 });
 
 test('leads can be sorted by status on the server', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     Lead::factory()->create(['first_name' => 'Zed', 'status' => 'Qualified']);
     Lead::factory()->create(['first_name' => 'Amy', 'status' => 'Assigned']);
     Lead::factory()->create(['first_name' => 'Mid', 'status' => 'New']);
@@ -38,7 +38,7 @@ test('leads can be sorted by status on the server', function () {
 });
 
 test('leads can be sorted by assigned user on the server', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     $first = User::factory()->create(['name' => 'Amy Adams']);
     $second = User::factory()->create(['name' => 'Zack Zim']);
     Lead::factory()->create(['first_name' => 'One', 'assigned_user_id' => $second->id]);
@@ -54,7 +54,7 @@ test('leads can be sorted by assigned user on the server', function () {
 });
 
 test('an invalid lead sort field falls back to the default', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     Lead::factory()->create();
 
     $this->actingAs($user)
@@ -68,7 +68,7 @@ test('an invalid lead sort field falls back to the default', function () {
 });
 
 test('the lead search filter matches by name', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     Lead::factory()->create(['first_name' => 'Jane', 'last_name' => 'Doe']);
     Lead::factory()->create(['first_name' => 'John', 'last_name' => 'Smith']);
 
@@ -82,7 +82,7 @@ test('the lead search filter matches by name', function () {
 });
 
 test('authenticated users can view the create lead form', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
 
     $this->actingAs($user)
         ->get(route('leads.create'))
@@ -91,7 +91,7 @@ test('authenticated users can view the create lead form', function () {
 });
 
 test('a lead can be created', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
 
     $response = $this->actingAs($user)->post(route('leads.store'), [
         'first_name' => 'Jane',
@@ -107,7 +107,7 @@ test('a lead can be created', function () {
 });
 
 test('creating a lead requires a last name', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
 
     $this->actingAs($user)
         ->post(route('leads.store'), ['last_name' => '', 'status' => 'New'])
@@ -115,7 +115,7 @@ test('creating a lead requires a last name', function () {
 });
 
 test('a lead can be viewed', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     $lead = Lead::factory()->create();
 
     $this->actingAs($user)
@@ -128,7 +128,7 @@ test('a lead can be viewed', function () {
 });
 
 test('a lead can be updated', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     $lead = Lead::factory()->create(['status' => 'New']);
 
     $response = $this->actingAs($user)->put(route('leads.update', $lead), [
@@ -142,7 +142,7 @@ test('a lead can be updated', function () {
 });
 
 test('a lead can be deleted', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['type' => 'admin']);
     $lead = Lead::factory()->create();
 
     $response = $this->actingAs($user)->delete(route('leads.destroy', $lead));

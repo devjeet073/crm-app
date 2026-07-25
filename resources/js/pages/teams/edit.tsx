@@ -1,11 +1,16 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm, setLayoutProps } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { index as teamsIndex, show as teamsShow, update as teamsUpdate } from '@/routes/teams';
+import {
+    index as teamsIndex,
+    show as teamsShow,
+    update as teamsUpdate,
+} from '@/routes/teams';
 import type { BreadcrumbItem, Team } from '@/types';
 
 type PageProps = { team: Team };
@@ -16,6 +21,8 @@ export default function TeamEdit({ team }: PageProps) {
         { title: team.name, href: teamsShow.url(team) },
         { title: 'Edit', href: '' },
     ];
+
+    setLayoutProps({ breadcrumbs });
 
     const { data, setData, patch, errors, processing, transform } = useForm({
         name: team.name,
@@ -45,20 +52,34 @@ export default function TeamEdit({ team }: PageProps) {
         <>
             <Head title={`Edit: ${team.name}`} />
             <div className="flex flex-1 flex-col gap-6 p-4">
-                <Heading title={`Edit "${team.name}"`} description="Update team details and available positions" />
+                <Heading
+                    title={`Edit "${team.name}"`}
+                    description="Update team details and available positions"
+                />
 
                 <form onSubmit={handleSubmit} className="max-w-lg space-y-6">
                     <Card>
-                        <CardHeader><CardTitle>Team Details</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle>Team Details</CardTitle>
+                        </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-1.5">
-                                <Label htmlFor="name">Name <span className="text-destructive">*</span></Label>
+                                <Label htmlFor="name">
+                                    Name{' '}
+                                    <span className="text-destructive">*</span>
+                                </Label>
                                 <Input
                                     id="name"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('name', e.target.value)
+                                    }
                                 />
-                                {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                                {errors.name && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.name}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-1.5">
@@ -66,32 +87,50 @@ export default function TeamEdit({ team }: PageProps) {
                                 <Textarea
                                     id="description"
                                     value={data.description}
-                                    onChange={(e) => setData('description', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('description', e.target.value)
+                                    }
                                     rows={3}
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="position_list">Positions (comma-separated)</Label>
+                                <Label htmlFor="position_list">
+                                    Positions (comma-separated)
+                                </Label>
                                 <Input
                                     id="position_list"
                                     value={data.position_list}
-                                    onChange={(e) => setData('position_list', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('position_list', e.target.value)
+                                    }
                                     placeholder="Sales Rep, Manager, …"
                                 />
                                 <p className="text-xs text-muted-foreground">
-                                    These labels are available when assigning users to this team.
+                                    These labels are available when assigning
+                                    users to this team.
                                 </p>
-                                {errors.position_list && <p className="text-sm text-destructive">{errors.position_list}</p>}
+                                {errors.position_list && (
+                                    <p className="text-sm text-destructive">
+                                        {errors.position_list}
+                                    </p>
+                                )}
                             </div>
                         </CardContent>
                     </Card>
 
                     <div className="flex gap-3">
+                        <Button variant="outline" type="button" onClick={() => router.visit(teamsIndex.url())}>
+                            <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
+                        </Button>
                         <Button type="submit" disabled={processing}>
                             {processing ? 'Saving…' : 'Save Changes'}
                         </Button>
-                        <Button variant="outline" type="button" onClick={() => router.visit(teamsShow.url(team))}>
+                        <Button
+                            variant="outline"
+                            type="button"
+                            onClick={() => router.visit(teamsShow.url(team))}
+                        >
                             Cancel
                         </Button>
                     </div>
@@ -101,4 +140,3 @@ export default function TeamEdit({ team }: PageProps) {
     );
 }
 
-TeamEdit.layout = { breadcrumbs: [] };

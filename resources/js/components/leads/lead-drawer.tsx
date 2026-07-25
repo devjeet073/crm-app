@@ -1,18 +1,19 @@
-import { router } from '@inertiajs/react';
+import { router, Link } from '@inertiajs/react';
+import { Maximize2 } from 'lucide-react';
 import LeadController from '@/actions/App/Http/Controllers/LeadController';
 import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
 import { LeadDetails } from '@/components/leads/lead-details';
 import LeadForm from '@/components/leads/lead-form';
 import { Button } from '@/components/ui/button';
 import {
-    Drawer,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-} from '@/components/ui/drawer';
-import { DrawerResizeHandle } from '@/components/ui/drawer-resize-handle';
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+} from '@/components/ui/sheet';
+import { SheetResizeHandle } from '@/components/ui/sheet-resize-handle';
 import { useDrawerResize } from '@/hooks/use-drawer-resize';
 import type { Lead, User } from '@/types';
 
@@ -49,24 +50,39 @@ export function LeadDrawer({
     industries,
     salutations,
 }: LeadDrawerProps) {
-    const { width, handleMouseDown } = useDrawerResize();
+    const { width, handlePointerDown } = useDrawerResize();
 
     return (
-        <Drawer
+        <Sheet
             direction="right"
             open={state !== null}
             onOpenChange={onOpenChange}
         >
-            <DrawerContent className="sm:max-w-none" style={{ width }}>
-                <DrawerResizeHandle onMouseDown={handleMouseDown} />
+            <SheetContent className="sm:max-w-none" style={{ width }}>
+                <SheetResizeHandle onPointerDown={handlePointerDown} />
                 {state?.mode === 'create' && (
                     <>
-                        <DrawerHeader>
-                            <DrawerTitle>New lead</DrawerTitle>
-                            <DrawerDescription>
-                                Capture an unqualified prospect.
-                            </DrawerDescription>
-                        </DrawerHeader>
+                        <SheetHeader className="flex flex-row items-start justify-between">
+                            <div className="flex flex-col gap-1.5">
+                                <SheetTitle>New lead</SheetTitle>
+                                <SheetDescription>
+                                    Capture an unqualified prospect.
+                                </SheetDescription>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                                className="-mt-2 -mr-2 shrink-0"
+                            >
+                                <Link
+                                    href="/leads/create"
+                                    title="Open full page"
+                                >
+                                    <Maximize2 className="h-4 w-4" />
+                                </Link>
+                            </Button>
+                        </SheetHeader>
                         <div className="overflow-y-auto px-4 pb-4">
                             <LeadForm
                                 users={users}
@@ -82,11 +98,24 @@ export function LeadDrawer({
 
                 {state?.mode === 'edit' && (
                     <>
-                        <DrawerHeader>
-                            <DrawerTitle>
+                        <SheetHeader className="flex flex-row items-start justify-between">
+                            <SheetTitle className="mt-1.5">
                                 Edit {leadName(state.lead)}
-                            </DrawerTitle>
-                        </DrawerHeader>
+                            </SheetTitle>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                                className="-mt-2 -mr-2 shrink-0"
+                            >
+                                <Link
+                                    href={`/leads/${state.lead.id}/edit`}
+                                    title="Open full page"
+                                >
+                                    <Maximize2 className="h-4 w-4" />
+                                </Link>
+                            </Button>
+                        </SheetHeader>
                         <div className="overflow-y-auto px-4 pb-4">
                             <LeadForm
                                 lead={state.lead}
@@ -103,18 +132,35 @@ export function LeadDrawer({
 
                 {state?.mode === 'view' && (
                     <>
-                        <DrawerHeader>
-                            <DrawerTitle>{leadName(state.lead)}</DrawerTitle>
-                            {state.lead.title && (
-                                <DrawerDescription>
-                                    {state.lead.title}
-                                </DrawerDescription>
-                            )}
-                        </DrawerHeader>
+                        <SheetHeader className="flex flex-row items-start justify-between">
+                            <div className="flex flex-col gap-1.5">
+                                <SheetTitle>
+                                    {leadName(state.lead)}
+                                </SheetTitle>
+                                {state.lead.title && (
+                                    <SheetDescription>
+                                        {state.lead.title}
+                                    </SheetDescription>
+                                )}
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                                className="-mt-2 -mr-2 shrink-0"
+                            >
+                                <Link
+                                    href={`/leads/${state.lead.id}`}
+                                    title="Open full page"
+                                >
+                                    <Maximize2 className="h-4 w-4" />
+                                </Link>
+                            </Button>
+                        </SheetHeader>
                         <div className="overflow-y-auto px-4 pb-4">
                             <LeadDetails lead={state.lead} />
                         </div>
-                        <DrawerFooter className="flex-row justify-end">
+                        <SheetFooter className="flex-row justify-end">
                             <DeleteAlertDialog
                                 trigger={
                                     <Button variant="destructive">
@@ -135,10 +181,10 @@ export function LeadDrawer({
                             >
                                 Edit
                             </Button>
-                        </DrawerFooter>
+                        </SheetFooter>
                     </>
                 )}
-            </DrawerContent>
-        </Drawer>
+            </SheetContent>
+        </Sheet>
     );
 }

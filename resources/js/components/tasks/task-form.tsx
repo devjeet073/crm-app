@@ -81,7 +81,9 @@ export default function TaskForm({
                 </CardHeader>
                 <CardContent className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2 sm:col-span-2">
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name">
+                            Name <span className="text-destructive">*</span>
+                        </Label>
                         <Input
                             id="name"
                             value={data.name}
@@ -95,9 +97,7 @@ export default function TaskForm({
                         <Label htmlFor="status">Status</Label>
                         <Select
                             value={data.status}
-                            onValueChange={(value) =>
-                                setData('status', value)
-                            }
+                            onValueChange={(value) => setData('status', value)}
                         >
                             <SelectTrigger id="status" className="w-full">
                                 <SelectValue placeholder="Select status" />
@@ -154,7 +154,6 @@ export default function TaskForm({
                         />
                         <InputError message={errors.date_end} />
                     </div>
-
 
                     <div className="grid gap-2 sm:col-span-2">
                         <Label htmlFor="assigned_user_id">Assigned user</Label>

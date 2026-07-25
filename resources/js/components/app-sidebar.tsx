@@ -18,7 +18,8 @@ import type { NavGroup, NavItem, Auth } from '@/types';
 const footerNavItems: NavItem[] = [];
 
 export function AppSidebar() {
-    const { sidebarMenu } = usePage<{ sidebarMenu?: NavGroup[]; auth: Auth }>().props;
+    const { sidebarMenu } = usePage<{ sidebarMenu?: NavGroup[]; auth: Auth }>()
+        .props;
 
     return (
         <Sidebar collapsible="icon" variant="inset">

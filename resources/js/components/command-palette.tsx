@@ -13,6 +13,8 @@ import {
     Mail,
     Loader2,
     CornerDownLeft,
+    Shield,
+    Plus,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -33,19 +35,30 @@ import {
 } from '@/components/ui/dialog';
 import type { Auth } from '@/types';
 
-type TabId = 'all' | 'accounts' | 'leads' | 'tasks' | 'users' | 'teams' | 'roles';
+type TabId =
+    'all' | 'accounts' | 'leads' | 'tasks' | 'users' | 'teams' | 'roles';
 
-const TABS: { id: TabId; label: string }[] = [
+type Tab = {
+    id: TabId;
+    label: string;
+    permission?: string;
+    adminOnly?: boolean;
+};
+
+const TABS: Tab[] = [
     { id: 'all', label: 'All' },
-    { id: 'accounts', label: 'Accounts' },
-    { id: 'leads', label: 'Leads' },
-    { id: 'tasks', label: 'Tasks' },
-    { id: 'users', label: 'Users' },
-    { id: 'teams', label: 'Teams' },
-    { id: 'roles', label: 'Roles' },
+    { id: 'accounts', label: 'Accounts', permission: 'Accounts' },
+    { id: 'leads', label: 'Leads', permission: 'Leads' },
+    { id: 'tasks', label: 'Tasks', permission: 'Tasks' },
+    { id: 'users', label: 'Users', adminOnly: true },
+    { id: 'teams', label: 'Teams', adminOnly: true },
+    { id: 'roles', label: 'Roles', adminOnly: true },
 ];
 
-const ENTITY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+const ENTITY_ICONS: Record<
+    string,
+    React.ComponentType<{ className?: string }>
+> = {
     Account: Users,
     Lead: Briefcase,
     Task: CheckSquare,
@@ -66,6 +79,7 @@ type NavItem = {
     href: string;
     icon: React.ComponentType<{ className?: string }>;
     permission?: string;
+    action?: 'view' | 'insert' | 'update' | 'delete';
     adminOnly?: boolean;
     tab?: TabId;
 };
@@ -85,23 +99,100 @@ const navigation: NavGroup[] = [
         ],
     },
     {
+        group: 'Quick Actions',
+        items: [
+            {
+                name: 'Create Lead',
+                href: '/leads/create',
+                icon: Plus,
+                permission: 'Leads',
+                action: 'insert',
+            },
+            {
+                name: 'Create Account',
+                href: '/accounts/create',
+                icon: Plus,
+                permission: 'Accounts',
+                action: 'insert',
+            },
+            {
+                name: 'Create Task',
+                href: '/tasks/create',
+                icon: Plus,
+                permission: 'Tasks',
+                action: 'insert',
+            },
+        ],
+    },
+    {
         group: 'CRM',
         items: [
-            { name: 'Leads', href: '/leads', icon: Briefcase, permission: 'Leads', tab: 'leads' },
-            { name: 'Accounts', href: '/accounts', icon: Users, permission: 'Accounts', tab: 'accounts' },
-            { name: 'Tasks', href: '/tasks', icon: CheckSquare, permission: 'Tasks', tab: 'tasks' },
-            { name: 'Documents', href: '/documents', icon: FileText, permission: 'Documents' },
-            { name: 'Document Folders', href: '/document-folders', icon: FolderOpen },
+            {
+                name: 'Leads',
+                href: '/leads',
+                icon: Briefcase,
+                permission: 'Leads',
+                tab: 'leads',
+            },
+            {
+                name: 'Accounts',
+                href: '/accounts',
+                icon: Users,
+                permission: 'Accounts',
+                tab: 'accounts',
+            },
+            {
+                name: 'Tasks',
+                href: '/tasks',
+                icon: CheckSquare,
+                permission: 'Tasks',
+                tab: 'tasks',
+            },
+            {
+                name: 'Documents',
+                href: '/documents',
+                icon: FileText,
+                permission: 'Documents',
+            },
+            {
+                name: 'Document Folders',
+                href: '/document-folders',
+                icon: FolderOpen,
+                permission: 'Documents',
+            },
         ],
     },
     {
         group: 'Administration',
         adminOnly: true,
         items: [
-            { name: 'Users', href: '/users', icon: Users, adminOnly: true, tab: 'users' },
-            { name: 'Roles', href: '/roles', icon: Shield, adminOnly: true, tab: 'roles' },
-            { name: 'Teams', href: '/teams', icon: UsersRound, adminOnly: true, tab: 'teams' },
-            { name: 'Email Configurations', href: '/email-configurations', icon: Mail, adminOnly: true },
+            {
+                name: 'Users',
+                href: '/users',
+                icon: Users,
+                adminOnly: true,
+                tab: 'users',
+            },
+            {
+                name: 'Roles',
+                href: '/roles',
+                icon: Shield,
+                adminOnly: true,
+                tab: 'roles',
+            },
+            {
+                name: 'Teams',
+                href: '/teams',
+                icon: UsersRound,
+                adminOnly: true,
+                tab: 'teams',
+            },
+            {
+                name: 'Email Configurations',
+                href: '/email-configurations',
+                icon: Mail,
+                adminOnly: true,
+            },
         ],
     },
     {
@@ -109,7 +200,11 @@ const navigation: NavGroup[] = [
         items: [
             { name: 'Profile', href: '/settings/profile', icon: UserCog },
             { name: 'Security', href: '/settings/security', icon: Shield },
-            { name: 'Appearance', href: '/settings/appearance', icon: Settings },
+            {
+                name: 'Appearance',
+                href: '/settings/appearance',
+                icon: Settings,
+            },
         ],
     },
 ];
@@ -117,7 +212,10 @@ const navigation: NavGroup[] = [
 function canAccessItem(
     item: NavItem,
     isAdmin: boolean,
-    modulePermissions: Record<string, boolean> | null,
+    modulePermissions: Record<
+        string,
+        { view: boolean; insert: boolean; update: boolean; delete: boolean }
+    > | null,
 ): boolean {
     if (item.adminOnly && !isAdmin) {
         return false;
@@ -128,7 +226,8 @@ function canAccessItem(
     }
 
     if (item.permission && modulePermissions) {
-        return modulePermissions[item.permission] === true;
+        const action = item.action || 'view';
+        return modulePermissions[item.permission]?.[action] === true;
     }
 
     return true;
@@ -173,6 +272,7 @@ export function CommandPalette() {
 
         if (!trimmed || selectedTab === 'all') {
             setResults([]);
+
             return;
         }
 
@@ -193,6 +293,7 @@ export function CommandPalette() {
                     setResults([]);
                 }
             }
+
             setLoading(false);
         }, 300);
 
@@ -217,7 +318,13 @@ export function CommandPalette() {
                 .map((group) => ({
                     ...group,
                     items: group.items.filter((item) => {
-                        if (!canAccessItem(item, auth.isAdmin, auth.module_permissions)) {
+                        if (
+                            !canAccessItem(
+                                item,
+                                auth.isAdmin,
+                                auth.module_permissions,
+                            )
+                        ) {
                             return false;
                         }
 
@@ -232,23 +339,42 @@ export function CommandPalette() {
         [auth.isAdmin, auth.module_permissions, selectedTab],
     );
 
-    const navigate = useCallback(
-        (href: string) => {
-            setOpen(false);
-            router.visit(href);
-        },
-        [],
-    );
+    const navigate = useCallback((href: string) => {
+        setOpen(false);
+        router.visit(href);
+    }, []);
 
     const handleTabSelect = useCallback((tab: TabId) => {
         setSelectedTab(tab);
     }, []);
 
+    const filteredTabs = useMemo(
+        () =>
+            TABS.filter((tab) => {
+                if (tab.adminOnly && !auth.isAdmin) {
+return false;
+}
+
+                if (auth.isAdmin) {
+return true;
+}
+
+                if (tab.permission && auth.module_permissions) {
+                    return auth.module_permissions[tab.permission]?.view === true;
+                }
+
+                return true;
+            }),
+        [auth.isAdmin, auth.module_permissions],
+    );
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogHeader className="sr-only">
                 <DialogTitle>Command Palette</DialogTitle>
-                <DialogDescription>Search for a command to run...</DialogDescription>
+                <DialogDescription>
+                    Search for a command to run...
+                </DialogDescription>
             </DialogHeader>
             <DialogContent className="overflow-hidden p-0">
                 <Command
@@ -256,19 +382,24 @@ export function CommandPalette() {
                     className="flex h-full w-full flex-col overflow-hidden rounded-md bg-popover text-popover-foreground **:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5"
                 >
                     <CommandInput
-                        placeholder={selectedTab === 'all' ? "Search pages to go to..." : "Type a command or search..."}
+                        placeholder={
+                            selectedTab === 'all'
+                                ? 'Search pages to go to...'
+                                : 'Type a command or search...'
+                        }
                         value={searchValue}
                         onValueChange={setSearchValue}
                     />
-                    <div className="flex gap-1 border-b px-3 pb-2 pt-2">
-                        {TABS.map((tab) => (
+                    <div className="flex gap-1 border-b px-3 pt-2 pb-2 overflow-x-auto no-scrollbar">
+                        {filteredTabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => handleTabSelect(tab.id)}
-                                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${selectedTab === tab.id
+                                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors shrink-0 ${
+                                    selectedTab === tab.id
                                         ? 'bg-primary text-primary-foreground'
                                         : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                                    }`}
+                                }`}
                             >
                                 {tab.label}
                             </button>
@@ -284,15 +415,20 @@ export function CommandPalette() {
                             ) : results.length > 0 ? (
                                 <CommandGroup heading="Results">
                                     {results.map((result) => {
-                                        const Icon = ENTITY_ICONS[result.entity];
+                                        const Icon =
+                                            ENTITY_ICONS[result.entity];
 
                                         return (
                                             <CommandItem
                                                 key={`${result.entity}-${result.id}`}
                                                 value={`${result.label} ${result.entity}`}
-                                                onSelect={() => navigate(result.href)}
+                                                onSelect={() =>
+                                                    navigate(result.href)
+                                                }
                                             >
-                                                {Icon && <Icon data-icon="inline-start" />}
+                                                {Icon && (
+                                                    <Icon data-icon="inline-start" />
+                                                )}
                                                 <span>{result.label}</span>
                                                 <span className="ml-auto text-xs text-muted-foreground">
                                                     {result.entity}
@@ -313,7 +449,9 @@ export function CommandPalette() {
                                             <CommandItem
                                                 key={item.href}
                                                 value={item.name}
-                                                onSelect={() => navigate(item.href)}
+                                                onSelect={() =>
+                                                    navigate(item.href)
+                                                }
                                             >
                                                 <item.icon data-icon="inline-start" />
                                                 <span>{item.name}</span>
@@ -326,7 +464,7 @@ export function CommandPalette() {
                             <CommandEmpty>No results found.</CommandEmpty>
                         )}
                     </CommandList>
-                    <div className="flex items-center border-t px-3 py-2 text-xs text-muted-foreground bg-muted/30">
+                    <div className="flex items-center border-t bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
                         <kbd className="mr-2 flex h-5 items-center justify-center rounded border bg-background px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
                             <CornerDownLeft className="h-3 w-3" />
                         </kbd>

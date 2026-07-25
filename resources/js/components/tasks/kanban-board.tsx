@@ -1,7 +1,4 @@
-import {
-    DragDropContext,
-    Droppable,
-} from '@hello-pangea/dnd';
+import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
 
 import { Loader2 } from 'lucide-react';
@@ -76,7 +73,11 @@ export function KanbanBoard({
 
         const observer = new IntersectionObserver(
             (entries) => {
-                if (!entries[0]?.isIntersecting || loadingRef.current || !hasMoreRef.current) {
+                if (
+                    !entries[0]?.isIntersecting ||
+                    loadingRef.current ||
+                    !hasMoreRef.current
+                ) {
                     return;
                 }
 
@@ -175,7 +176,7 @@ export function KanbanBoard({
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json',
+                        Accept: 'application/json',
                         'X-XSRF-TOKEN': decodeURIComponent(
                             document.cookie
                                 .split('; ')
@@ -194,10 +195,7 @@ export function KanbanBoard({
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
-            <div
-                style={{ position: 'relative' }}
-                className="flex gap-4 pb-4"
-            >
+            <div style={{ position: 'relative' }} className="flex gap-4 pb-4">
                 {statuses.map((status) => (
                     <div
                         key={status}

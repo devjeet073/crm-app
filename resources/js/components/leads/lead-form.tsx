@@ -148,7 +148,9 @@ export default function LeadForm({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="last_name">Last name</Label>
+                        <Label htmlFor="last_name">
+                            Last name <span className="text-destructive">*</span>
+                        </Label>
                         <Input
                             id="last_name"
                             value={data.last_name}

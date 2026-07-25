@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { LayoutGrid, List, Pencil, Trash2 } from 'lucide-react';
@@ -14,12 +15,9 @@ import type { TaskDrawerState } from '@/components/tasks/task-drawer';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { index as tasksIndex } from '@/routes/tasks';
-import type {
-    BreadcrumbItem,
-    Paginated,
-    Task,
-} from '@/types';
+import type { BreadcrumbItem, Paginated, Task, Auth } from '@/types';
 
 type PageProps = {
     tasks: Paginated<Task> | Task[];
@@ -35,9 +33,7 @@ type PageProps = {
     priorities: string[];
 };
 
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Tasks', href: tasksIndex() },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Tasks', href: tasksIndex() }];
 
 function taskName(task: Task): string {
     return task.name || `Task #${task.id}`;
@@ -76,6 +72,12 @@ export default function TasksIndex({
     const [search, setSearch] = useState(filters.search ?? '');
     const [drawer, setDrawer] = useState<TaskDrawerState | null>(null);
     const [view, setView] = useState<string>(initialView);
+    const isMobile = useIsMobile();
+    const { auth } = usePage<{ auth: Auth }>().props;
+
+    const canInsert = auth.isAdmin || auth.module_permissions?.['Tasks']?.insert;
+    const canUpdate = auth.isAdmin || auth.module_permissions?.['Tasks']?.update;
+    const canDelete = auth.isAdmin || auth.module_permissions?.['Tasks']?.delete;
 
     useEffect(() => {
         setSearch(filters.search ?? '');
@@ -127,23 +129,25 @@ export default function TasksIndex({
         );
     }
 
-    const handleKeyDown = useCallback(
-        (e: KeyboardEvent) => {
-            if (e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
-                return;
-            }
+    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+        if (!canInsert || e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
+            return;
+        }
 
-            const tag = (e.target as HTMLElement)?.tagName;
+        const tag = (e.target as HTMLElement)?.tagName;
 
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
-                return;
-            }
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+            return;
+        }
 
-            e.preventDefault();
+        e.preventDefault();
+
+        if (isMobile) {
+            router.visit(TaskController.create.url());
+        } else {
             setDrawer({ mode: 'create' });
-        },
-        [],
-    );
+        }
+    }, [isMobile, canInsert]);
 
     useEffect(() => {
         document.addEventListener('keydown', handleKeyDown);
@@ -167,9 +171,15 @@ export default function TasksIndex({
                 cell: ({ row }) => (
                     <button
                         type="button"
-                        onClick={() =>
-                            setDrawer({ mode: 'view', task: row.original })
-                        }
+                        onClick={() => {
+                            if (isMobile) {
+                                router.visit(
+                                    TaskController.show.url(row.original),
+                                );
+                            } else {
+                                setDrawer({ mode: 'view', task: row.original });
+                            }
+                        }}
                         className="font-medium hover:underline"
                     >
                         {taskName(row.original)}
@@ -215,7 +225,7 @@ export default function TasksIndex({
                         title="Due Date"
                     />
                 ),
-                meta: { label: 'Due Date' },
+                meta: { label: 'Due Date', isDateTime: true },
                 cell: ({ row }) => (
                     <span className="text-muted-foreground">
                         {row.original.date_end
@@ -246,7 +256,7 @@ export default function TasksIndex({
             },
             {
                 id: 'actions',
-                header: '',
+                header: 'Actions',
                 enableSorting: false,
                 enableHiding: false,
                 cell: ({ row }) => {
@@ -254,18 +264,27 @@ export default function TasksIndex({
 
                     return (
                         <div className="flex items-center justify-end gap-1">
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setDrawer({ mode: 'edit', task })
-                                }
-                                className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                                title="Edit"
-                            >
-                                <Pencil className="h-4 w-4" />
-                            </button>
-                            <DeleteAlertDialog
-                                trigger={
+                            {canUpdate && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (isMobile) {
+                                            router.visit(
+                                                TaskController.edit.url(task),
+                                            );
+                                        } else {
+                                            setDrawer({ mode: 'edit', task });
+                                        }
+                                    }}
+                                    className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    title="Edit"
+                                >
+                                    <Pencil className="h-4 w-4" />
+                                </button>
+                            )}
+                            {canDelete && (
+                                <DeleteAlertDialog
+                                    trigger={
                                     <button
                                         type="button"
                                         className="inline-flex items-center justify-center rounded-md p-1.5 text-destructive hover:bg-destructive/10"
@@ -282,12 +301,13 @@ export default function TasksIndex({
                                     )
                                 }
                             />
+                            )}
                         </div>
                     );
                 },
             },
         ],
-        [],
+        [isMobile, canUpdate, canDelete],
     );
 
     const kanbanTasks = isPaginated(tasks) ? tasks.data : tasks;
@@ -338,12 +358,22 @@ export default function TasksIndex({
                             </button>
                         </div>
 
-                        <Button onClick={() => setDrawer({ mode: 'create' })}>
-                            New task
-                            <kbd className="ml-2 hidden items-center gap-1 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                                <span className="text-xs">N</span>
-                            </kbd>
-                        </Button>
+                        {canInsert && (
+                            <Button
+                                onClick={() => {
+                                    if (isMobile) {
+                                        router.visit(TaskController.create.url());
+                                    } else {
+                                        setDrawer({ mode: 'create' });
+                                    }
+                                }}
+                            >
+                                New task
+                                <kbd className="ml-2 hidden items-center gap-1 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                                    <span className="text-xs">N</span>
+                                </kbd>
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -351,9 +381,13 @@ export default function TasksIndex({
                     <KanbanBoard
                         tasks={kanbanTasks}
                         statuses={statuses}
-                        onTaskClick={(task) =>
-                            setDrawer({ mode: 'view', task })
-                        }
+                        onTaskClick={(task) => {
+                            if (isMobile) {
+                                router.visit(TaskController.show.url(task));
+                            } else {
+                                setDrawer({ mode: 'view', task });
+                            }
+                        }}
                         initialPage={initialPage ?? 1}
                         initialHasMore={initialHasMore ?? false}
                         search={filters.search ?? undefined}
@@ -362,7 +396,8 @@ export default function TasksIndex({
                     />
                 ) : (
                     <>
-                        <DataTable tableId="tasks-index-table"
+                        <DataTable
+                            tableId="tasks-index-table"
                             columns={columns}
                             data={isPaginated(tasks) ? tasks.data : []}
                             emptyMessage="No tasks found."

@@ -26,7 +26,11 @@ export default function DocumentFoldersIndex({ folders }: PageProps) {
                 id: 'name',
                 accessorFn: (f) => f.name ?? `Folder #${f.id}`,
                 header: ({ column, table }) => (
-                    <DataTableColumnHeader column={column} table={table} title="Name" />
+                    <DataTableColumnHeader
+                        column={column}
+                        table={table}
+                        title="Name"
+                    />
                 ),
                 meta: { label: 'Name' },
                 cell: ({ row }) => (
@@ -40,7 +44,11 @@ export default function DocumentFoldersIndex({ folders }: PageProps) {
                 id: 'parent',
                 accessorFn: (f) => f.parent?.name ?? '',
                 header: ({ column, table }) => (
-                    <DataTableColumnHeader column={column} table={table} title="Parent" />
+                    <DataTableColumnHeader
+                        column={column}
+                        table={table}
+                        title="Parent"
+                    />
                 ),
                 meta: { label: 'Parent' },
                 cell: ({ row }) => (
@@ -53,22 +61,35 @@ export default function DocumentFoldersIndex({ folders }: PageProps) {
                 id: 'documents_count',
                 accessorFn: (f) => f.documents_count ?? 0,
                 header: ({ column, table }) => (
-                    <DataTableColumnHeader column={column} table={table} title="Documents" />
+                    <DataTableColumnHeader
+                        column={column}
+                        table={table}
+                        title="Documents"
+                    />
                 ),
                 meta: { label: 'Documents' },
                 cell: ({ row }) => (
-                    <span className="text-muted-foreground">{row.original.documents_count ?? 0}</span>
+                    <span className="text-muted-foreground">
+                        {row.original.documents_count ?? 0}
+                    </span>
                 ),
             },
             {
                 accessorKey: 'created_at',
                 header: ({ column, table }) => (
-                    <DataTableColumnHeader column={column} table={table} title="Created" />
+                    <DataTableColumnHeader
+                        column={column}
+                        table={table}
+                        title="Created"
+                    />
                 ),
-                meta: { label: 'Created' },
+                meta: { label: 'Created', isDateTime: true },
                 cell: ({ row }) => (
                     <span className="text-muted-foreground">
-                        {format(new Date(row.original.created_at), 'dd MMM HH:mm')}
+                        {format(
+                            new Date(row.original.created_at),
+                            'dd MMM HH:mm',
+                        )}
                     </span>
                 ),
             },
@@ -101,7 +122,11 @@ export default function DocumentFoldersIndex({ folders }: PageProps) {
                                 }
                                 title="Delete folder?"
                                 description={`Delete "${folder.name}"? Documents inside will be unlinked from this folder.`}
-                                onConfirm={() => router.delete(`/document-folders/${folder.id}`)}
+                                onConfirm={() =>
+                                    router.delete(
+                                        `/document-folders/${folder.id}`,
+                                    )
+                                }
                             />
                         </div>
                     );
@@ -117,13 +142,17 @@ export default function DocumentFoldersIndex({ folders }: PageProps) {
 
             <div className="flex flex-1 flex-col gap-6 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
-                    <Heading title="Document Folders" description={`${folders.total} total`} />
+                    <Heading
+                        title="Document Folders"
+                        description={`${folders.total} total`}
+                    />
                     <Button asChild>
                         <a href="/document-folders/create">New folder</a>
                     </Button>
                 </div>
 
-                <DataTable tableId="folders-index-table"
+                <DataTable
+                    tableId="folders-index-table"
                     columns={columns}
                     data={folders.data}
                     emptyMessage="No folders found."

@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import { FileText, FolderOpen, Paperclip, Pencil, Trash2 } from 'lucide-react';
@@ -10,8 +11,21 @@ import Pagination from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { BreadcrumbItem, Document, DocumentFolder, Paginated, User } from '@/types';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import type {
+    BreadcrumbItem,
+    Document,
+    DocumentFolder,
+    Paginated,
+    User,
+    Auth,
+} from '@/types';
 
 type PageProps = {
     documents: Paginated<Document>;
@@ -27,7 +41,9 @@ type PageProps = {
     types: string[];
 };
 
-const breadcrumbs: BreadcrumbItem[] = [{ title: 'Documents', href: '/documents' }];
+const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Documents', href: '/documents' },
+];
 
 const STATUS_COLORS: Record<string, string> = {
     Active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
@@ -44,22 +60,30 @@ export default function DocumentsIndex({
     types,
 }: PageProps) {
     const [search, setSearch] = useState(filters.search ?? '');
-    const [selectedFolder, setSelectedFolder] = useState(filters.folder_id ?? 'all');
+    const [selectedFolder, setSelectedFolder] = useState(
+        filters.folder_id ?? 'all',
+    );
     const [selectedDocs, setSelectedDocs] = useState<Document[]>([]);
+    const { auth } = usePage<{ auth: Auth }>().props;
+
+    const canInsert = auth.isAdmin || auth.module_permissions?.['Documents']?.insert;
+    const canUpdate = auth.isAdmin || auth.module_permissions?.['Documents']?.update;
+    const canDelete = auth.isAdmin || auth.module_permissions?.['Documents']?.delete;
 
     useEffect(() => {
- setSearch(filters.search ?? ''); 
-}, [filters.search]);
+        setSearch(filters.search ?? '');
+    }, [filters.search]);
     useEffect(() => {
- setSelectedFolder(filters.folder_id ?? 'all'); 
-}, [filters.folder_id]);
+        setSelectedFolder(filters.folder_id ?? 'all');
+    }, [filters.folder_id]);
 
     function navigate(overrides: Record<string, unknown> = {}) {
         router.get(
             '/documents',
             {
                 search: search.trim() || undefined,
-                folder_id: selectedFolder !== 'all' ? selectedFolder : undefined,
+                folder_id:
+                    selectedFolder !== 'all' ? selectedFolder : undefined,
                 sort: filters.sort,
                 direction: filters.direction,
                 ...overrides,
@@ -73,10 +97,13 @@ export default function DocumentsIndex({
         const currentSearch = filters.search ?? '';
 
         if (nextSearch === currentSearch) {
-return;
-}
+            return;
+        }
 
-        const t = window.setTimeout(() => navigate({ search: nextSearch || undefined }), 350);
+        const t = window.setTimeout(
+            () => navigate({ search: nextSearch || undefined }),
+            350,
+        );
 
         return () => window.clearTimeout(t);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -98,23 +125,20 @@ return;
         });
     }
 
-    const handleKeyDown = useCallback(
-        (e: KeyboardEvent) => {
-            if (e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
-                return;
-            }
+    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+        if (!canInsert || e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
+            return;
+        }
 
-            const tag = (e.target as HTMLElement)?.tagName;
+        const tag = (e.target as HTMLElement)?.tagName;
 
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
-                return;
-            }
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+            return;
+        }
 
-            e.preventDefault();
-            router.visit('/documents/create');
-        },
-        [],
-    );
+        e.preventDefault();
+        router.visit('/documents/create');
+    }, [canInsert]);
 
     useEffect(() => {
         document.addEventListener('keydown', handleKeyDown);
@@ -128,7 +152,11 @@ return;
                 id: 'name',
                 accessorFn: (doc) => doc.name ?? `Document #${doc.id}`,
                 header: ({ column, table }) => (
-                    <DataTableColumnHeader column={column} table={table} title="Name" />
+                    <DataTableColumnHeader
+                        column={column}
+                        table={table}
+                        title="Name"
+                    />
                 ),
                 meta: { label: 'Name' },
                 cell: ({ row }) => (
@@ -144,14 +172,20 @@ return;
             {
                 accessorKey: 'status',
                 header: ({ column, table }) => (
-                    <DataTableColumnHeader column={column} table={table} title="Status" />
+                    <DataTableColumnHeader
+                        column={column}
+                        table={table}
+                        title="Status"
+                    />
                 ),
                 meta: { label: 'Status' },
                 cell: ({ row }) => {
                     const s = row.original.status;
 
                     return (
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[s] ?? 'bg-muted text-muted-foreground'}`}>
+                        <span
+                            className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[s] ?? 'bg-muted text-muted-foreground'}`}
+                        >
                             {s}
                         </span>
                     );
@@ -160,7 +194,11 @@ return;
             {
                 accessorKey: 'type',
                 header: ({ column, table }) => (
-                    <DataTableColumnHeader column={column} table={table} title="Type" />
+                    <DataTableColumnHeader
+                        column={column}
+                        table={table}
+                        title="Type"
+                    />
                 ),
                 meta: { label: 'Type' },
                 cell: ({ row }) => (
@@ -178,7 +216,11 @@ return;
                 id: 'folder',
                 accessorFn: (doc) => doc.folder?.name ?? '',
                 header: ({ column, table }) => (
-                    <DataTableColumnHeader column={column} table={table} title="Folder" />
+                    <DataTableColumnHeader
+                        column={column}
+                        table={table}
+                        title="Folder"
+                    />
                 ),
                 meta: { label: 'Folder' },
                 cell: ({ row }) => (
@@ -188,20 +230,29 @@ return;
                                 <FolderOpen className="h-3.5 w-3.5" />
                                 {row.original.folder.name}
                             </>
-                        ) : '—'}
+                        ) : (
+                            '—'
+                        )}
                     </span>
                 ),
             },
             {
                 accessorKey: 'expiration_date',
                 header: ({ column, table }) => (
-                    <DataTableColumnHeader column={column} table={table} title="Expires" />
+                    <DataTableColumnHeader
+                        column={column}
+                        table={table}
+                        title="Expires"
+                    />
                 ),
-                meta: { label: 'Expires' },
+                meta: { label: 'Expires', isDateTime: true },
                 cell: ({ row }) => (
                     <span className="text-muted-foreground">
                         {row.original.expiration_date
-                            ? format(new Date(row.original.expiration_date), 'dd MMM HH:mm')
+                            ? format(
+                                  new Date(row.original.expiration_date),
+                                  'dd MMM HH:mm',
+                              )
                             : '—'}
                     </span>
                 ),
@@ -210,7 +261,11 @@ return;
                 id: 'assigned_to',
                 accessorFn: (doc) => doc.assigned_user?.name ?? '',
                 header: ({ column, table }) => (
-                    <DataTableColumnHeader column={column} table={table} title="Assigned to" />
+                    <DataTableColumnHeader
+                        column={column}
+                        table={table}
+                        title="Assigned to"
+                    />
                 ),
                 meta: { label: 'Assigned to' },
                 cell: ({ row }) => (
@@ -222,12 +277,19 @@ return;
             {
                 accessorKey: 'created_at',
                 header: ({ column, table }) => (
-                    <DataTableColumnHeader column={column} table={table} title="Created" />
+                    <DataTableColumnHeader
+                        column={column}
+                        table={table}
+                        title="Created"
+                    />
                 ),
-                meta: { label: 'Created' },
+                meta: { label: 'Created', isDateTime: true },
                 cell: ({ row }) => (
                     <span className="text-muted-foreground">
-                        {format(new Date(row.original.created_at), 'dd MMM HH:mm')}
+                        {format(
+                            new Date(row.original.created_at),
+                            'dd MMM HH:mm',
+                        )}
                     </span>
                 ),
             },
@@ -241,33 +303,39 @@ return;
 
                     return (
                         <div className="flex items-center justify-end gap-1">
-                            <a
-                                href={`/documents/${doc.id}/edit`}
-                                className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                                title="Edit"
-                            >
-                                <Pencil className="h-4 w-4" />
-                            </a>
-                            <DeleteAlertDialog
-                                trigger={
-                                    <button
-                                        type="button"
-                                        className="inline-flex items-center justify-center rounded-md p-1.5 text-destructive hover:bg-destructive/10"
-                                        title="Delete"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
-                                }
-                                title="Delete document?"
-                                description={`This will permanently delete "${doc.name ?? `Document #${doc.id}`}". This action cannot be undone.`}
-                                onConfirm={() => router.delete(`/documents/${doc.id}`)}
-                            />
+                            {canUpdate && (
+                                <a
+                                    href={`/documents/${doc.id}/edit`}
+                                    className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    title="Edit"
+                                >
+                                    <Pencil className="h-4 w-4" />
+                                </a>
+                            )}
+                            {canDelete && (
+                                <DeleteAlertDialog
+                                    trigger={
+                                        <button
+                                            type="button"
+                                            className="inline-flex items-center justify-center rounded-md p-1.5 text-destructive hover:bg-destructive/10"
+                                            title="Delete"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    }
+                                    title="Delete document?"
+                                    description={`This will permanently delete "${doc.name ?? `Document #${doc.id}`}". This action cannot be undone.`}
+                                    onConfirm={() =>
+                                        router.delete(`/documents/${doc.id}`)
+                                    }
+                                />
+                            )}
                         </div>
                     );
                 },
             },
         ],
-        [],
+        [canUpdate, canDelete],
     );
 
     return (
@@ -291,8 +359,14 @@ return;
                             className="w-56"
                         />
 
-                        <Select value={selectedFolder} onValueChange={handleFolderChange}>
-                            <SelectTrigger id="documents-folder-filter" className="w-44">
+                        <Select
+                            value={selectedFolder}
+                            onValueChange={handleFolderChange}
+                        >
+                            <SelectTrigger
+                                id="documents-folder-filter"
+                                className="w-44"
+                            >
                                 <SelectValue placeholder="All folders" />
                             </SelectTrigger>
                             <SelectContent>
@@ -312,25 +386,31 @@ return;
                                 onClick={() => {
                                     setSearch('');
                                     setSelectedFolder('all');
-                                    navigate({ search: undefined, folder_id: undefined });
+                                    navigate({
+                                        search: undefined,
+                                        folder_id: undefined,
+                                    });
                                 }}
                             >
                                 Reset
                             </Button>
                         )}
 
-                        <Button asChild>
-                            <a href="/documents/create">
-                                New document
-                                <kbd className="ml-2 hidden items-center gap-1 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-                                    <span className="text-xs">N</span>
-                                </kbd>
-                            </a>
-                        </Button>
+                        {canInsert && (
+                            <Button asChild>
+                                <a href="/documents/create">
+                                    New document
+                                    <kbd className="ml-2 hidden items-center gap-1 rounded-md border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                                        <span className="text-xs">N</span>
+                                    </kbd>
+                                </a>
+                            </Button>
+                        )}
                     </div>
                 </div>
 
-                <DataTable tableId="documents-index-table"
+                <DataTable
+                    tableId="documents-index-table"
                     columns={columns}
                     data={documents.data}
                     emptyMessage="No documents found."
@@ -340,17 +420,22 @@ return;
                     enableRowSelection
                     onSelectedRowsChange={setSelectedDocs}
                     bulkActions={
-                        <DeleteAlertDialog
-                            trigger={
-                                <Button variant="destructive" size="sm">
-                                    <Trash2 data-icon="inline-start" className="h-4 w-4" />
-                                    Delete
-                                </Button>
-                            }
-                            title="Delete selected documents?"
-                            description={`This will permanently delete ${selectedDocs.length} document${selectedDocs.length > 1 ? 's' : ''}. This action cannot be undone.`}
-                            onConfirm={() => bulkDelete(selectedDocs)}
-                        />
+                        canDelete ? (
+                            <DeleteAlertDialog
+                                trigger={
+                                    <Button variant="destructive" size="sm">
+                                        <Trash2
+                                            data-icon="inline-start"
+                                            className="h-4 w-4"
+                                        />
+                                        Delete
+                                    </Button>
+                                }
+                                title="Delete selected documents?"
+                                description={`This will permanently delete ${selectedDocs.length} document${selectedDocs.length > 1 ? 's' : ''}. This action cannot be undone.`}
+                                onConfirm={() => bulkDelete(selectedDocs)}
+                            />
+                        ) : undefined
                     }
                 />
 

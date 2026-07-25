@@ -7,8 +7,20 @@ import Pagination from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { index as rolesIndex, show as rolesShow, create as rolesCreate, destroy as rolesDestroy } from '@/routes/roles';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import {
+    index as rolesIndex,
+    show as rolesShow,
+    create as rolesCreate,
+    destroy as rolesDestroy,
+} from '@/routes/roles';
 import type { BreadcrumbItem, Paginated, Role } from '@/types';
 
 type PageProps = {
@@ -33,29 +45,30 @@ export default function RolesIndex({ roles, filters }: PageProps) {
         }
 
         const t = window.setTimeout(() => {
-            router.get(rolesIndex.url(), { search: next || undefined }, { preserveState: true, replace: true });
+            router.get(
+                rolesIndex.url(),
+                { search: next || undefined },
+                { preserveState: true, replace: true },
+            );
         }, 350);
 
         return () => window.clearTimeout(t);
     }, [search, filters.search]);
 
-    const handleKeyDown = useCallback(
-        (e: KeyboardEvent) => {
-            if (e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
-                return;
-            }
+    const handleKeyDown = useCallback((e: KeyboardEvent) => {
+        if (e.key !== 'n' || e.metaKey || e.ctrlKey || e.altKey) {
+            return;
+        }
 
-            const tag = (e.target as HTMLElement)?.tagName;
+        const tag = (e.target as HTMLElement)?.tagName;
 
-            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
-                return;
-            }
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+            return;
+        }
 
-            e.preventDefault();
-            router.visit(rolesCreate.url());
-        },
-        [],
-    );
+        e.preventDefault();
+        router.visit(rolesCreate.url());
+    }, []);
 
     useEffect(() => {
         document.addEventListener('keydown', handleKeyDown);
@@ -97,14 +110,21 @@ export default function RolesIndex({ roles, filters }: PageProps) {
                             <TableRow>
                                 <TableHead>Name</TableHead>
                                 <TableHead>Description</TableHead>
-                                <TableHead className="text-center">Users</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead className="text-center">
+                                    Users
+                                </TableHead>
+                                <TableHead className="text-right">
+                                    Actions
+                                </TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {roles.data.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                                    <TableCell
+                                        colSpan={5}
+                                        className="py-8 text-center text-muted-foreground"
+                                    >
                                         No roles found.
                                     </TableCell>
                                 </TableRow>
@@ -124,24 +144,38 @@ export default function RolesIndex({ roles, filters }: PageProps) {
                                         {role.description ?? '—'}
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <Badge variant="secondary">{role.users_count ?? 0}</Badge>
+                                        <Badge variant="secondary">
+                                            {role.users_count ?? 0}
+                                        </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-1">
-                                            <Button variant="ghost" size="sm" asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                asChild
+                                            >
                                                 <a href={rolesShow.url(role)}>
                                                     <Users className="h-4 w-4" />
                                                 </a>
                                             </Button>
                                             <DeleteAlertDialog
                                                 trigger={
-                                                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-destructive hover:text-destructive"
+                                                    >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 }
                                                 title={`Delete "${role.name}"?`}
                                                 description="This will remove the role from all users and teams. This action cannot be undone."
-                                                onConfirm={() => router.delete(rolesDestroy.url(role))}
+                                                onConfirm={() =>
+                                                    router.delete(
+                                                        rolesDestroy.url(role),
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </TableCell>

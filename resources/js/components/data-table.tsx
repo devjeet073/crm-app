@@ -13,6 +13,7 @@ import type {
     Table as TanstackTable,
     VisibilityState,
 } from '@tanstack/react-table';
+import { format } from 'date-fns';
 import {
     ArrowDownIcon,
     ArrowUpDownIcon,
@@ -38,11 +39,18 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 declare module '@tanstack/react-table' {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     interface ColumnMeta<TData, TValue> {
         label?: string;
+        isDateTime?: boolean;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -128,19 +136,26 @@ export function DataTable<TData, TValue>({
         {},
     );
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-    const [columnSizing, setColumnSizing] = useState<ColumnSizingState>(() => {
-        if (!tableId || typeof window === 'undefined') {
-            return {};
+    const [columnSizing, setColumnSizing] = useState<ColumnSizingState>({});
+
+    useEffect(() => {
+        if (!tableId) {
+            return;
         }
 
         const saved = window.localStorage.getItem(`table_sizing_${tableId}`);
 
-        return saved ? JSON.parse(saved) : {};
-    });
+        if (saved) {
+            setColumnSizing(JSON.parse(saved));
+        }
+    }, [tableId]);
 
     useEffect(() => {
         if (tableId && Object.keys(columnSizing).length > 0) {
-            localStorage.setItem(`table_sizing_${tableId}`, JSON.stringify(columnSizing));
+            localStorage.setItem(
+                `table_sizing_${tableId}`,
+                JSON.stringify(columnSizing),
+            );
         }
     }, [columnSizing, tableId]);
 
@@ -292,15 +307,24 @@ export function DataTable<TData, TValue>({
                 </div>
             )}
 
-            <div className="overflow-auto rounded-xl border relative w-full">
-                <Table style={{ tableLayout: 'fixed', width: table.getTotalSize(), minWidth: '100%' }}>
+            <div className="relative w-full overflow-auto rounded-xl border">
+                <Table
+                    style={{
+                        tableLayout: 'fixed',
+                        width: table.getTotalSize(),
+                        minWidth: '100%',
+                    }}
+                >
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead 
+                                    <TableHead
                                         key={header.id}
-                                        style={{ width: header.getSize(), position: 'relative' }}
+                                        style={{
+                                            width: header.getSize(),
+                                            position: 'relative',
+                                        }}
                                     >
                                         {header.isPlaceholder
                                             ? null
@@ -313,9 +337,13 @@ export function DataTable<TData, TValue>({
                                             <div
                                                 onMouseDown={header.getResizeHandler()}
                                                 onTouchStart={header.getResizeHandler()}
-                                                onDoubleClick={() => header.column.resetSize()}
-                                                className={`absolute right-0 top-0 h-full w-1.5 cursor-col-resize select-none touch-none hover:bg-primary/50 ${
-                                                    header.column.getIsResizing() ? 'bg-primary' : 'bg-border/50'
+                                                onDoubleClick={() =>
+                                                    header.column.resetSize()
+                                                }
+                                                className={`absolute top-0 right-0 h-full w-1.5 cursor-col-resize touch-none select-none hover:bg-primary/50 ${
+                                                    header.column.getIsResizing()
+                                                        ? 'bg-primary'
+                                                        : 'bg-border/50'
                                                 }`}
                                             />
                                         )}
@@ -328,17 +356,59 @@ export function DataTable<TData, TValue>({
                         {table.getRowModel().rows.length ? (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow key={row.id}>
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell 
-                                            key={cell.id}
-                                            style={{ width: cell.column.getSize() }}
-                                        >
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext(),
-                                            )}
-                                        </TableCell>
-                                    ))}
+                                    {row.getVisibleCells().map((cell) => {
+                                        const isDateTime =
+                                            cell.column.columnDef.meta
+                                                ?.isDateTime;
+                                        const val = cell.getValue();
+
+                                        return (
+                                            <TableCell
+                                                key={cell.id}
+                                                style={{
+                                                    width: cell.column.getSize(),
+                                                }}
+                                            >
+                                                {isDateTime && val ? (
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger
+                                                                asChild
+                                                            >
+                                                                <span className="cursor-help underline decoration-dotted underline-offset-2">
+                                                                    {flexRender(
+                                                                        cell
+                                                                            .column
+                                                                            .columnDef
+                                                                            .cell,
+                                                                        cell.getContext(),
+                                                                    )}
+                                                                </span>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent className="border bg-popover text-popover-foreground shadow-sm">
+                                                                <p>
+                                                                    {format(
+                                                                        new Date(
+                                                                            val as
+                                                                                | string
+                                                                                | number,
+                                                                        ),
+                                                                        'dd MMM yyyy HH:mm:ss OOOO',
+                                                                    )}
+                                                                </p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                ) : (
+                                                    flexRender(
+                                                        cell.column.columnDef
+                                                            .cell,
+                                                        cell.getContext(),
+                                                    )
+                                                )}
+                                            </TableCell>
+                                        );
+                                    })}
                                 </TableRow>
                             ))
                         ) : (

@@ -25,41 +25,43 @@ export function useFilters({ initialFilters, url }: UseFiltersProps) {
             const cleanFilters: Record<string, any> = {};
 
             for (const [key, value] of Object.entries(nextFilters)) {
-                if (value !== null && value !== '' && (Array.isArray(value) ? value.length > 0 : true)) {
+                if (
+                    value !== null &&
+                    value !== '' &&
+                    (Array.isArray(value) ? value.length > 0 : true)
+                ) {
                     cleanFilters[key] = value;
                 }
             }
 
-            router.get(
-                url,
-                cleanFilters,
-                {
-                    preserveState: true,
-                    preserveScroll: true,
-                    replace: true,
-                }
-            );
+            router.get(url, cleanFilters, {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true,
+            });
         },
-        [filters, url]
+        [filters, url],
     );
 
     const updateFilter = useCallback(
         (key: string, value: any) => {
             applyFilters({ [key]: value });
         },
-        [applyFilters]
+        [applyFilters],
     );
 
     const removeFilter = useCallback(
         (key: string, valueToRemove?: any) => {
             if (valueToRemove !== undefined && Array.isArray(filters[key])) {
-                const nextValue = filters[key].filter((v: any) => v !== valueToRemove);
+                const nextValue = filters[key].filter(
+                    (v: any) => v !== valueToRemove,
+                );
                 applyFilters({ [key]: nextValue.length ? nextValue : null });
             } else {
                 applyFilters({ [key]: null });
             }
         },
-        [filters, applyFilters]
+        [filters, applyFilters],
     );
 
     const clearAllFilters = useCallback(() => {
