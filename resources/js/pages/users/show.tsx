@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react';
-import { Pencil, Shield, Users, Clock, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, Pencil, Shield, Users, Clock, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 import Heading from '@/components/heading';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +45,9 @@ export default function UserShow({ user }: PageProps) {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
+                        <Button variant="outline" onClick={() => router.visit(usersIndex.url())}>
+                            <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
+                        </Button>
                         {user.is_active
                             ? <span className="flex items-center gap-1 text-sm text-green-600 font-medium"><CheckCircle2 className="h-4 w-4" /> Active</span>
                             : <span className="flex items-center gap-1 text-sm text-muted-foreground"><XCircle className="h-4 w-4" /> Inactive</span>

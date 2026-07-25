@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
+use App\Models\CrmModule;
 use App\Models\Role;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -45,11 +46,11 @@ class RoleController extends Controller
 
     public function show(Role $role): Response
     {
-        $role->load(['users', 'teams'])
-            ->loadCount(['users', 'teams']);
+        $role->loadCount('users');
 
         return Inertia::render('roles/show', [
             'role' => $role,
+            'users' => Inertia::defer(fn () => $role->users()->get()),
             ...$this->formProps(),
         ]);
     }
@@ -88,7 +89,7 @@ class RoleController extends Controller
         return [
             'permissionColumns' => Role::permissionColumns(),
             'permissionLevels' => Role::permissionLevels(),
-            'crmModules' => ['Accounts', 'Contacts', 'Leads', 'Tasks', 'Documents', 'Teams', 'Users'],
+            'crmModules' => CrmModule::pluck('name')->toArray(),
             'crudActions' => ['view', 'insert', 'update', 'delete'],
         ];
     }

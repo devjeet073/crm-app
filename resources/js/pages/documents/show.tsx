@@ -1,6 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { format } from 'date-fns';
-import { Download, FileText, FolderOpen, Pencil, Trash2, User2 } from 'lucide-react';
+import { ArrowLeft, Download, FileText, FolderOpen, Pencil, Trash2, User2 } from 'lucide-react';
 import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -72,6 +72,9 @@ export default function DocumentShow({ document }: PageProps) {
                     </div>
 
                     <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => router.visit('/documents')}>
+                            <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
+                        </Button>
                         <Button variant="outline" size="sm" asChild>
                             <a href={`/documents/${document.id}/edit`}>
                                 <Pencil className="mr-1.5 h-4 w-4" /> Edit

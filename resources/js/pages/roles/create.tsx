@@ -107,7 +107,7 @@ export default function RoleCreate({ permissionColumns, permissionLevels, crmMod
                             <CardDescription>Set global permission levels. Values: not-set, yes, no, own, team, all</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="grid gap-6 sm:grid-cols-2 content-start items-start">
                                 {permissionColumns.map((col) => (
                                     <div key={col} className="space-y-1.5">
                                         <Label htmlFor={col}>{PERMISSION_LABELS[col] ?? col}</Label>

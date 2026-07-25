@@ -1,4 +1,4 @@
-import { Head, Form } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +22,25 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function EmailConfigurationsEdit({ config, mailers, encryptionOptions }: PageProps) {
+    const { data, setData, patch, errors, processing } = useForm({
+        name: config.name,
+        mailer: config.mailer,
+        host: config.host ?? '',
+        port: config.port ?? 587,
+        encryption: config.encryption ?? '',
+        username: config.username ?? '',
+        password: '',
+        from_address: config.from_address,
+        from_name: config.from_name ?? '',
+        timeout: config.timeout ?? 30,
+        is_active: config.is_active,
+    });
+
+    function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        patch(configsUpdate.url(config), { preserveScroll: true });
+    }
+
     return (
         <>
             <Head title={`Edit: ${config.name}`} />
@@ -33,161 +52,142 @@ export default function EmailConfigurationsEdit({ config, mailers, encryptionOpt
                     <p className="text-sm text-muted-foreground mt-1">Update the email configuration settings.</p>
                 </div>
 
-                <Form
-                    {...configsUpdate.form({ id: config.id })}
-                    resetOnSuccess
-                    defaults={{
-                        name: config.name,
-                        mailer: config.mailer,
-                        host: config.host ?? '',
-                        port: config.port ?? 587,
-                        encryption: config.encryption ?? '',
-                        username: config.username ?? '',
-                        password: '',
-                        from_address: config.from_address,
-                        from_name: config.from_name ?? '',
-                        timeout: config.timeout ?? 30,
-                        is_active: config.is_active,
-                    }}
-                    className="space-y-6"
-                >
-                    {({ errors, processing }) => (
-                        <>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Basic Information</CardTitle>
-                                    <CardDescription>Name and mail driver for this configuration.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="name">Name</Label>
-                                            <Input id="name" name="name" required />
-                                            {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="mailer">Mailer</Label>
-                                            <Select name="mailer">
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select mailer" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {mailers.map((m) => (
-                                                        <SelectItem key={m} value={m}>{m}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            {errors.mailer && <p className="text-sm text-destructive">{errors.mailer}</p>}
-                                        </div>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Basic Information</CardTitle>
+                                <CardDescription>Name and mail driver for this configuration.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">Name</Label>
+                                        <Input id="name" name="name" value={data.name} onChange={(e) => setData('name', e.target.value)} required />
+                                        {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
                                     </div>
-                                </CardContent>
-                            </Card>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="mailer">Mailer</Label>
+                                        <Select name="mailer" value={data.mailer} onValueChange={(val) => setData('mailer', val)}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select mailer" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {mailers.map((m) => (
+                                                    <SelectItem key={m} value={m}>{m}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.mailer && <p className="text-sm text-destructive">{errors.mailer}</p>}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>SMTP Settings</CardTitle>
-                                    <CardDescription>Server connection details for outgoing mail.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="host">Host</Label>
-                                            <Input id="host" name="host" placeholder="smtp.example.com" />
-                                            {errors.host && <p className="text-sm text-destructive">{errors.host}</p>}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="port">Port</Label>
-                                            <Input id="port" name="port" type="number" />
-                                            {errors.port && <p className="text-sm text-destructive">{errors.port}</p>}
-                                        </div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>SMTP Settings</CardTitle>
+                                <CardDescription>Server connection details for outgoing mail.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="host">Host</Label>
+                                        <Input id="host" name="host" placeholder="smtp.example.com" value={data.host} onChange={(e) => setData('host', e.target.value)} />
+                                        {errors.host && <p className="text-sm text-destructive">{errors.host}</p>}
                                     </div>
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="encryption">Encryption</Label>
-                                            <Select name="encryption">
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="None" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="">None</SelectItem>
-                                                    {encryptionOptions.map((e) => (
-                                                        <SelectItem key={e} value={e}>{e.toUpperCase()}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            {errors.encryption && <p className="text-sm text-destructive">{errors.encryption}</p>}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="timeout">Timeout (seconds)</Label>
-                                            <Input id="timeout" name="timeout" type="number" />
-                                            {errors.timeout && <p className="text-sm text-destructive">{errors.timeout}</p>}
-                                        </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="port">Port</Label>
+                                        <Input id="port" name="port" type="number" value={data.port} onChange={(e) => setData('port', parseInt(e.target.value))} />
+                                        {errors.port && <p className="text-sm text-destructive">{errors.port}</p>}
                                     </div>
-                                </CardContent>
-                            </Card>
+                                </div>
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="encryption">Encryption</Label>
+                                        <Select name="encryption" value={data.encryption} onValueChange={(val) => setData('encryption', val)}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="None" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="none">None</SelectItem>
+                                                {encryptionOptions.map((e) => (
+                                                    <SelectItem key={e} value={e}>{e.toUpperCase()}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.encryption && <p className="text-sm text-destructive">{errors.encryption}</p>}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="timeout">Timeout (seconds)</Label>
+                                        <Input id="timeout" name="timeout" type="number" value={data.timeout} onChange={(e) => setData('timeout', parseInt(e.target.value))} />
+                                        {errors.timeout && <p className="text-sm text-destructive">{errors.timeout}</p>}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Credentials</CardTitle>
-                                    <CardDescription>Leave blank to keep the existing password.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="username">Username</Label>
-                                            <Input id="username" name="username" />
-                                            {errors.username && <p className="text-sm text-destructive">{errors.username}</p>}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="password">New Password</Label>
-                                            <Input id="password" name="password" type="password" placeholder="Leave blank to keep current" />
-                                            {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
-                                        </div>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Credentials</CardTitle>
+                                <CardDescription>Leave blank to keep the existing password.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="username">Username</Label>
+                                        <Input id="username" name="username" value={data.username} onChange={(e) => setData('username', e.target.value)} />
+                                        {errors.username && <p className="text-sm text-destructive">{errors.username}</p>}
                                     </div>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>From Address</CardTitle>
-                                    <CardDescription>The default sender address and name for outgoing emails.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="grid gap-4 sm:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="from_address">From Address</Label>
-                                            <Input id="from_address" name="from_address" type="email" required />
-                                            {errors.from_address && <p className="text-sm text-destructive">{errors.from_address}</p>}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="from_name">From Name</Label>
-                                            <Input id="from_name" name="from_name" />
-                                            {errors.from_name && <p className="text-sm text-destructive">{errors.from_name}</p>}
-                                        </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="password">New Password</Label>
+                                        <Input id="password" name="password" type="password" placeholder="Leave blank to keep current" value={data.password} onChange={(e) => setData('password', e.target.value)} />
+                                        {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
                                     </div>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                            <Card>
-                                <CardContent className="pt-6">
-                                    <div className="flex items-center gap-2">
-                                        <Checkbox id="is_active" name="is_active" />
-                                        <Label htmlFor="is_active">Set as active configuration</Label>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>From Address</CardTitle>
+                                <CardDescription>The default sender address and name for outgoing emails.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="from_address">From Address</Label>
+                                        <Input id="from_address" name="from_address" type="email" value={data.from_address} onChange={(e) => setData('from_address', e.target.value)} required />
+                                        {errors.from_address && <p className="text-sm text-destructive">{errors.from_address}</p>}
                                     </div>
-                                </CardContent>
-                            </Card>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="from_name">From Name</Label>
+                                        <Input id="from_name" name="from_name" value={data.from_name} onChange={(e) => setData('from_name', e.target.value)} />
+                                        {errors.from_name && <p className="text-sm text-destructive">{errors.from_name}</p>}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                            <div className="flex items-center gap-3">
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? 'Updating...' : 'Update Configuration'}
-                                </Button>
-                                <Button variant="outline" asChild>
-                                    <a href={configsShow.url(config)}>Cancel</a>
-                                </Button>
-                            </div>
-                        </>
-                    )}
-                </Form>
+                        <Card>
+                            <CardContent>
+                                <div className="flex items-center gap-2">
+                                    <Checkbox id="is_active" name="is_active" checked={data.is_active} onCheckedChange={(checked) => setData('is_active', !!checked)} />
+                                    <Label htmlFor="is_active">Set as active configuration</Label>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <div className="flex items-center gap-3">
+                            <Button type="submit" disabled={processing}>
+                                {processing ? 'Updating...' : 'Update Configuration'}
+                            </Button>
+                            <Button variant="outline" asChild>
+                                <a href={configsShow.url(config)}>Cancel</a>
+                            </Button>
+                        </div>
+                    </>
+                </form>
             </div>
         </>
     );

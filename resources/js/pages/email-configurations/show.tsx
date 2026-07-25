@@ -1,10 +1,15 @@
-import { Head, router } from '@inertiajs/react';
-import { Mail, Pencil, Trash2, CheckCircle2, XCircle } from 'lucide-react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { ArrowLeft, Mail, Pencil, Trash2, Send, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { index as configsIndex, edit as configsEdit, destroy as configsDestroy } from '@/routes/email-configurations';
 import type { BreadcrumbItem } from '@/types';
 import type { EmailConfiguration } from './index';
@@ -19,6 +24,25 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function EmailConfigurationsShow({ config }: PageProps) {
+    const [dialogOpen, setDialogOpen] = useState(false);
+
+    const { data, setData, post, processing, errors, reset } = useForm({
+        to: '',
+        subject: 'Test Email from ' + config.name,
+        message: 'This is a test email sent from the email configuration "' + config.name + '".',
+    });
+
+    function handleSendTest(e: React.FormEvent) {
+        e.preventDefault();
+        post(`/email-configurations/${config.id}/send-test`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setDialogOpen(false);
+                reset();
+            },
+        });
+    }
+
     return (
         <>
             <Head title={`Email: ${config.name}`} />
@@ -29,6 +53,71 @@ export default function EmailConfigurationsShow({ config }: PageProps) {
                         description={`${config.mailer.toUpperCase()} — ${config.from_address}`}
                     />
                     <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => router.visit(configsIndex.url())}>
+                            <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
+                        </Button>
+                        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="outline">
+                                    <Send className="mr-1.5 h-4 w-4" /> Send Test Email
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Send Test Email</DialogTitle>
+                                    <DialogDescription>
+                                        Send a test email using the &ldquo;{config.name}&rdquo; configuration to verify
+                                        your SMTP settings.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <form onSubmit={handleSendTest}>
+                                    <div className="space-y-4 py-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="to">Recipient Email</Label>
+                                            <Input
+                                                id="to"
+                                                type="email"
+                                                placeholder="you@example.com"
+                                                value={data.to}
+                                                onChange={(e) => setData('to', e.target.value)}
+                                                required
+                                            />
+                                            {errors.to && <p className="text-sm text-destructive">{errors.to}</p>}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="subject">Subject</Label>
+                                            <Input
+                                                id="subject"
+                                                value={data.subject}
+                                                onChange={(e) => setData('subject', e.target.value)}
+                                                required
+                                            />
+                                            {errors.subject && <p className="text-sm text-destructive">{errors.subject}</p>}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="message">Message</Label>
+                                            <Textarea
+                                                id="message"
+                                                rows={5}
+                                                value={data.message}
+                                                onChange={(e) => setData('message', e.target.value)}
+                                                required
+                                            />
+                                            {errors.message && <p className="text-sm text-destructive">{errors.message}</p>}
+                                        </div>
+                                    </div>
+                                    <DialogFooter>
+                                        <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                                            Cancel
+                                        </Button>
+                                        <Button type="submit" disabled={processing}>
+                                            {processing && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
+                                            {processing ? 'Sending...' : 'Send Email'}
+                                        </Button>
+                                    </DialogFooter>
+                                </form>
+                            </DialogContent>
+                        </Dialog>
                         <Button variant="outline" asChild>
                             <a href={configsEdit.url(config)}>
                                 <Pencil className="mr-1.5 h-4 w-4" /> Edit
@@ -48,7 +137,6 @@ export default function EmailConfigurationsShow({ config }: PageProps) {
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-2">
-                    {/* Status */}
                     <Card>
                         <CardHeader>
                             <CardTitle>Status</CardTitle>
@@ -67,7 +155,6 @@ export default function EmailConfigurationsShow({ config }: PageProps) {
                         </CardContent>
                     </Card>
 
-                    {/* Mailer Info */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -83,7 +170,6 @@ export default function EmailConfigurationsShow({ config }: PageProps) {
                     </Card>
                 </div>
 
-                {/* Server Details */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Server Details</CardTitle>
@@ -119,7 +205,6 @@ export default function EmailConfigurationsShow({ config }: PageProps) {
                     </CardContent>
                 </Card>
 
-                {/* From Address */}
                 <Card>
                     <CardHeader>
                         <CardTitle>Sender Information</CardTitle>

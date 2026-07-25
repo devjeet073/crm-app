@@ -1,4 +1,5 @@
 import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
 import LeadController from '@/actions/App/Http/Controllers/LeadController';
 import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
 import Heading from '@/components/heading';
@@ -39,6 +40,9 @@ export default function LeadShow({ lead }: PageProps) {
                     />
 
                     <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={() => router.visit(leadsIndex.url())}>
+                            <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
+                        </Button>
                         <Button variant="outline" asChild>
                             <Link href={LeadController.edit(lead)}>Edit</Link>
                         </Button>

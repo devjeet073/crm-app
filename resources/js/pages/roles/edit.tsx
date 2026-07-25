@@ -6,12 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
 import { Textarea } from '@/components/ui/textarea';
 import { index as rolesIndex, show as rolesShow, update as rolesUpdate } from '@/routes/roles';
@@ -26,19 +26,19 @@ type PageProps = {
 };
 
 const PERMISSION_LABELS: Record<string, string> = {
-    assignment_permission:           'Assignment',
-    user_permission:                 'User Access',
-    message_permission:              'Messaging',
-    portal_permission:               'Portal',
-    group_email_account_permission:  'Group Email',
-    export_permission:               'Export',
-    mass_update_permission:          'Mass Update',
-    data_privacy_permission:         'Data Privacy',
-    follower_management_permission:  'Follower Management',
-    audit_permission:                'Audit Log',
-    mention_permission:              'Mentions',
-    user_calendar_permission:        'User Calendars',
-    lock_permission:                 'Record Lock',
+    assignment_permission: 'Assignment',
+    user_permission: 'User Access',
+    message_permission: 'Messaging',
+    portal_permission: 'Portal',
+    group_email_account_permission: 'Group Email',
+    export_permission: 'Export',
+    mass_update_permission: 'Mass Update',
+    data_privacy_permission: 'Data Privacy',
+    follower_management_permission: 'Follower Management',
+    audit_permission: 'Audit Log',
+    mention_permission: 'Mentions',
+    user_calendar_permission: 'User Calendars',
+    lock_permission: 'Record Lock',
 };
 
 export default function RoleEdit({ role, permissionColumns, permissionLevels, crmModules, crudActions }: PageProps) {
@@ -96,7 +96,7 @@ export default function RoleEdit({ role, permissionColumns, permissionLevels, cr
                             <CardDescription>Adjust global permission levels for this role</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="grid gap-6 sm:grid-cols-8">
                                 {permissionColumns.map((col) => (
                                     <div key={col} className="space-y-1.5">
                                         <Label htmlFor={col}>{PERMISSION_LABELS[col] ?? col}</Label>
@@ -142,8 +142,8 @@ export default function RoleEdit({ role, permissionColumns, permissionLevels, cr
                                                                 const newData = { ...data.data };
 
                                                                 if (!newData[module]) {
-newData[module] = {};
-}
+                                                                    newData[module] = {};
+                                                                }
 
                                                                 newData[module][action] = val;
                                                                 setData('data', newData);

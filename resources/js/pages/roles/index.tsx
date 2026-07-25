@@ -98,7 +98,6 @@ export default function RolesIndex({ roles, filters }: PageProps) {
                                 <TableHead>Name</TableHead>
                                 <TableHead>Description</TableHead>
                                 <TableHead className="text-center">Users</TableHead>
-                                <TableHead className="text-center">Teams</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -126,9 +125,6 @@ export default function RolesIndex({ roles, filters }: PageProps) {
                                     </TableCell>
                                     <TableCell className="text-center">
                                         <Badge variant="secondary">{role.users_count ?? 0}</Badge>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <Badge variant="secondary">{role.teams_count ?? 0}</Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-1">

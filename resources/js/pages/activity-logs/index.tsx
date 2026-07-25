@@ -9,6 +9,7 @@ import Pagination from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { BreadcrumbItem, Paginated } from '@/types';
@@ -77,7 +78,7 @@ export default function ActivityLogsIndex({ logs, filters, options }: any) {
         {
             accessorKey: 'description',
             header: 'Description',
-            cell: ({ row }) => <span>{row.original.description}</span>
+            cell: ({ row }) => <span className="block max-w-[300px] truncate" title={row.original.description}>{row.original.description}</span>
         },
         {
             accessorKey: 'subject_type',
@@ -91,7 +92,20 @@ export default function ActivityLogsIndex({ logs, filters, options }: any) {
         {
             accessorKey: 'created_at',
             header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="Date/Time" />,
-            cell: ({ row }) => <span>{format(new Date(row.original.created_at), 'dd MMM HH:mm')}</span>
+            cell: ({ row }) => (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="cursor-help underline decoration-dotted underline-offset-2">
+                                {format(new Date(row.original.created_at), 'dd MMM HH:mm')}
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{format(new Date(row.original.created_at), 'dd MMM yyyy HH:mm:ss OOOO')}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )
         },
         {
             id: 'actions',

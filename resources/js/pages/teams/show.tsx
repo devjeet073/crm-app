@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { Pencil, Trash2, Users, Shield, X } from 'lucide-react';
+import { ArrowLeft, Pencil, Trash2, Users, Shield, X } from 'lucide-react';
 import { useState } from 'react';
 import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
 import Heading from '@/components/heading';
@@ -46,6 +46,9 @@ return;
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <Heading title={team.name} description={team.description ?? 'No description'} />
                     <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => router.visit(teamsIndex.url())}>
+                            <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
+                        </Button>
                         <Button variant="outline" asChild>
                             <a href={teamsEdit.url(team)}><Pencil className="mr-1.5 h-4 w-4" /> Edit</a>
                         </Button>

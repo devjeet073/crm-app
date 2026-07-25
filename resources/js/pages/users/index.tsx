@@ -121,7 +121,7 @@ export default function UsersIndex({ users, filters, filterOptions }: PageProps)
         },
         {
             id: 'actions',
-            header: '',
+            header: 'Actions',
             enableSorting: false,
             enableHiding: false,
             cell: ({ row }) => {

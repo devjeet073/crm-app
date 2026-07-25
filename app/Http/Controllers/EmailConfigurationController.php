@@ -30,7 +30,7 @@ class EmailConfigurationController extends Controller
     public function create(): Response
     {
         return Inertia::render('email-configurations/create', [
-            'mailers' => ['smtp', 'sendmail', 'log', 'ses', 'postmark', 'array'],
+            'mailers' => ['smtp'],
             'encryptionOptions' => ['tls', 'ssl'],
         ]);
     }
@@ -54,7 +54,7 @@ class EmailConfigurationController extends Controller
     {
         return Inertia::render('email-configurations/show', [
             'config' => $emailConfiguration,
-            'mailers' => ['smtp', 'sendmail', 'log', 'ses', 'postmark', 'array'],
+            'mailers' => ['smtp'],
             'encryptionOptions' => ['tls', 'ssl'],
         ]);
     }
@@ -63,7 +63,7 @@ class EmailConfigurationController extends Controller
     {
         return Inertia::render('email-configurations/edit', [
             'config' => $emailConfiguration,
-            'mailers' => ['smtp', 'sendmail', 'log', 'ses', 'postmark', 'array'],
+            'mailers' => ['smtp'],
             'encryptionOptions' => ['tls', 'ssl'],
         ]);
     }

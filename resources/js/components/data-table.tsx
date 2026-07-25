@@ -129,11 +129,11 @@ export function DataTable<TData, TValue>({
     );
     const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
     const [columnSizing, setColumnSizing] = useState<ColumnSizingState>(() => {
-        if (!tableId) {
-return {};
-}
+        if (!tableId || typeof window === 'undefined') {
+            return {};
+        }
 
-        const saved = localStorage.getItem(`table_sizing_${tableId}`);
+        const saved = window.localStorage.getItem(`table_sizing_${tableId}`);
 
         return saved ? JSON.parse(saved) : {};
     });

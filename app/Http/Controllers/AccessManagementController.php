@@ -20,11 +20,14 @@ class AccessManagementController extends Controller
 
     public function assignRoleToUser(Request $request, Role $role): RedirectResponse
     {
-        $request->validate(['user_id' => ['required', 'exists:users,id']]);
+        $request->validate([
+            'user_ids' => ['required', 'array'],
+            'user_ids.*' => ['exists:users,id'],
+        ]);
 
-        $role->users()->syncWithoutDetaching([$request->integer('user_id')]);
+        $role->users()->syncWithoutDetaching($request->input('user_ids'));
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Role assigned to user.')]);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Role assigned to users.')]);
 
         return back();
     }

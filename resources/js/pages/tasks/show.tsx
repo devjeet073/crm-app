@@ -1,4 +1,5 @@
 import { Head, Link, router, setLayoutProps } from '@inertiajs/react';
+import { ArrowLeft } from 'lucide-react';
 import TaskController from '@/actions/App/Http/Controllers/TaskController';
 import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
 import Heading from '@/components/heading';
@@ -34,6 +35,9 @@ export default function TaskShow({ task }: PageProps) {
                     />
 
                     <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={() => router.visit(tasksIndex.url())}>
+                            <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
+                        </Button>
                         <Button variant="outline" asChild>
                             <Link href={TaskController.edit(task)}>
                                 Edit

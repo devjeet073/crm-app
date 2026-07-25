@@ -6,8 +6,12 @@ const MIN_WIDTH = 320;
 const MAX_WIDTH = 800;
 
 function getStoredWidth(): number {
+    if (typeof window === 'undefined') {
+        return DEFAULT_WIDTH;
+    }
+
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
+        const stored = window.localStorage.getItem(STORAGE_KEY);
 
         if (stored) {
             const parsed = parseInt(stored, 10);
