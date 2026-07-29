@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SearchUserRequest;
+use App\Http\Requests\SendUserEmailRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\EmailConfiguration;
 use App\Models\Team;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -37,12 +41,16 @@ class UserController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        $emailConfigurations = EmailConfiguration::where('is_active', true)
+            ->get(['id', 'name', 'from_address', 'from_name']);
+
         return Inertia::render('users/index', [
             'users' => $users,
             'filters' => ['search' => $search, 'type' => is_array($type) ? $type : ($type ? [$type] : [])],
             'filterOptions' => [
                 'types' => collect(['regular', 'admin', 'portal', 'api'])->map(fn ($t) => ['label' => ucfirst($t), 'value' => $t])->toArray(),
             ],
+            'emailConfigurations' => $emailConfigurations,
         ]);
     }
 
@@ -50,8 +58,12 @@ class UserController extends Controller
     {
         $user->load(['roles', 'teams', 'defaultTeam', 'authLogRecords' => fn ($q) => $q->latest()->limit(20)]);
 
+        $emailConfigurations = EmailConfiguration::where('is_active', true)
+            ->get(['id', 'name', 'from_address', 'from_name']);
+
         return Inertia::render('users/show', [
             'user' => $user,
+            'emailConfigurations' => $emailConfigurations,
         ]);
     }
 
@@ -104,5 +116,55 @@ class UserController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('User deleted.')]);
 
         return to_route('users.index');
+    }
+
+    public function sendEmail(SendUserEmailRequest $request): RedirectResponse
+    {
+        $validated = $request->validated();
+
+        $emailConfig = EmailConfiguration::findOrFail($validated['email_configuration_id']);
+
+        try {
+            $emailConfig->sendMail(
+                to: $validated['to'],
+                subject: $validated['subject'],
+                message: $validated['body']
+            );
+
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('Email sent successfully.')]);
+        } catch (\Throwable $e) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('Failed to send email: :error', ['error' => $e->getMessage()])]);
+        }
+
+        return back();
+    }
+
+    public function search(SearchUserRequest $request): JsonResponse
+    {
+        if ($id = $request->validated('id')) {
+            $user = User::find($id, ['id', 'name', 'email', 'avatar_url', 'avatar_color']);
+
+            return response()->json(['users' => $user ? [$user] : [], 'hasMore' => false]);
+        }
+
+        $search = $request->validated('search');
+        $page = max(1, (int) $request->validated('page', 1));
+        $perPage = 20;
+
+        $query = User::query()
+            ->when($search, function ($q, $s) {
+                $q->where('name', 'like', "%{$s}%")
+                    ->orWhere('email', 'like', "%{$s}%");
+            });
+
+        $users = (clone $query)
+            ->orderBy('name')
+            ->offset(($page - 1) * $perPage)
+            ->limit($perPage)
+            ->get(['id', 'name', 'email', 'avatar_url', 'avatar_color']);
+
+        $hasMore = $query->count() > $page * $perPage;
+
+        return response()->json(['users' => $users, 'hasMore' => $hasMore]);
     }
 }

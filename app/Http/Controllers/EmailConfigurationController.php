@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SendTestEmailRequest;
 use App\Http\Requests\StoreEmailConfigurationRequest;
 use App\Http\Requests\UpdateEmailConfigurationRequest;
 use App\Models\EmailConfiguration;
@@ -94,5 +95,22 @@ class EmailConfigurationController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Email configuration deleted.')]);
 
         return to_route('email-configurations.index');
+    }
+
+    public function sendTest(SendTestEmailRequest $request, EmailConfiguration $emailConfiguration): RedirectResponse
+    {
+        try {
+            $emailConfiguration->sendMail(
+                to: $request->validated('to'),
+                subject: $request->validated('subject'),
+                message: $request->validated('message')
+            );
+
+            Inertia::flash('toast', ['type' => 'success', 'message' => __('Test email sent successfully.')]);
+        } catch (\Throwable $e) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => __('Failed to send test email: :error', ['error' => $e->getMessage()])]);
+        }
+
+        return back();
     }
 }

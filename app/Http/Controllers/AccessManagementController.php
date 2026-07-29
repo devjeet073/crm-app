@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AssignRoleToTeamRequest;
+use App\Http\Requests\AssignRoleToUserRequest;
+use App\Http\Requests\AssignUserToTeamRequest;
+use App\Http\Requests\RevokeRoleFromTeamRequest;
+use App\Http\Requests\RevokeRoleFromUserRequest;
+use App\Http\Requests\RevokeUserFromTeamRequest;
 use App\Models\Role;
 use App\Models\Team;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 /**
@@ -18,25 +23,18 @@ class AccessManagementController extends Controller
 {
     // ── Role ↔ User ─────────────────────────────────────────────────────────
 
-    public function assignRoleToUser(Request $request, Role $role): RedirectResponse
+    public function assignRoleToUser(AssignRoleToUserRequest $request, Role $role): RedirectResponse
     {
-        $request->validate([
-            'user_ids' => ['required', 'array'],
-            'user_ids.*' => ['exists:users,id'],
-        ]);
-
-        $role->users()->syncWithoutDetaching($request->input('user_ids'));
+        $role->users()->syncWithoutDetaching($request->validated('user_ids'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Role assigned to users.')]);
 
         return back();
     }
 
-    public function revokeRoleFromUser(Request $request, Role $role): RedirectResponse
+    public function revokeRoleFromUser(RevokeRoleFromUserRequest $request, Role $role): RedirectResponse
     {
-        $request->validate(['user_id' => ['required', 'exists:users,id']]);
-
-        $role->users()->detach($request->integer('user_id'));
+        $role->users()->detach($request->validated('user_id'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Role revoked from user.')]);
 
@@ -45,22 +43,18 @@ class AccessManagementController extends Controller
 
     // ── Role ↔ Team ─────────────────────────────────────────────────────────
 
-    public function assignRoleToTeam(Request $request, Role $role): RedirectResponse
+    public function assignRoleToTeam(AssignRoleToTeamRequest $request, Role $role): RedirectResponse
     {
-        $request->validate(['team_id' => ['required', 'exists:teams,id']]);
-
-        $role->teams()->syncWithoutDetaching([$request->integer('team_id')]);
+        $role->teams()->syncWithoutDetaching([$request->validated('team_id')]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Role assigned to team.')]);
 
         return back();
     }
 
-    public function revokeRoleFromTeam(Request $request, Role $role): RedirectResponse
+    public function revokeRoleFromTeam(RevokeRoleFromTeamRequest $request, Role $role): RedirectResponse
     {
-        $request->validate(['team_id' => ['required', 'exists:teams,id']]);
-
-        $role->teams()->detach($request->integer('team_id'));
+        $role->teams()->detach($request->validated('team_id'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Role revoked from team.')]);
 
@@ -69,15 +63,10 @@ class AccessManagementController extends Controller
 
     // ── Team ↔ User ─────────────────────────────────────────────────────────
 
-    public function assignUserToTeam(Request $request, Team $team): RedirectResponse
+    public function assignUserToTeam(AssignUserToTeamRequest $request, Team $team): RedirectResponse
     {
-        $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
-            'role' => ['nullable', 'string', 'max:100'],
-        ]);
-
         $team->users()->syncWithoutDetaching([
-            $request->integer('user_id') => ['role' => $request->input('role')],
+            $request->validated('user_id') => ['role' => $request->validated('role')],
         ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('User added to team.')]);
@@ -85,11 +74,9 @@ class AccessManagementController extends Controller
         return back();
     }
 
-    public function revokeUserFromTeam(Request $request, Team $team): RedirectResponse
+    public function revokeUserFromTeam(RevokeUserFromTeamRequest $request, Team $team): RedirectResponse
     {
-        $request->validate(['user_id' => ['required', 'exists:users,id']]);
-
-        $team->users()->detach($request->integer('user_id'));
+        $team->users()->detach($request->validated('user_id'));
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('User removed from team.')]);
 

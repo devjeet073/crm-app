@@ -21,9 +21,9 @@ class CrmDemoSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = User::query()->count() > 1
+        $users = User::query()->count() > 0
             ? User::all()
-            : User::first()->newCollection()->merge(User::factory(4)->create());
+            : User::factory(5)->create();
 
         $accounts = Account::factory(15)
             ->recycle($users)

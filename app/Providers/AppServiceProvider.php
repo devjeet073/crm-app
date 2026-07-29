@@ -2,12 +2,15 @@
 
 namespace App\Providers;
 
+use App\Models\Account;
 use App\Models\AuthLogRecord;
+use App\Observers\AccountObserver;
 use App\Services\ActivityLogService;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -34,6 +37,8 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->registerAuthLogListeners();
         $this->registerErrorPages();
+
+        Account::observe(AccountObserver::class);
     }
 
     protected function registerErrorPages(): void
@@ -121,8 +126,10 @@ class AppServiceProvider extends ServiceProvider
     {
         Date::use(CarbonImmutable::class);
 
+        Model::preventLazyLoading(! $this->app->isProduction());
+
         DB::prohibitDestructiveCommands(
-            app()->isProduction(),
+            $this->app->isProduction(),
         );
 
         Password::defaults(fn (): ?Password => app()->isProduction()

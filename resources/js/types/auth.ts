@@ -11,6 +11,26 @@ export type User = {
     [key: string]: unknown;
 };
 
+export type DatabaseNotification = {
+    id: string;
+    type: string;
+    notifiable_type: string;
+    notifiable_id: number;
+    data: {
+        account_id?: number;
+        account_name?: string;
+        action?: 'created' | 'modified' | 'deleted';
+        actor_id?: number;
+        actor_name?: string;
+        title?: string;
+        message?: string;
+        url?: string;
+    };
+    read_at: string | null;
+    created_at: string;
+    updated_at: string;
+};
+
 export type Auth = {
     user: User;
     isAdmin: boolean;
@@ -18,6 +38,8 @@ export type Auth = {
         string,
         { view: boolean; insert: boolean; update: boolean; delete: boolean }
     > | null;
+    unreadNotificationsCount?: number;
+    recentNotifications?: DatabaseNotification[];
 };
 
 /* @chisel-passkeys */

@@ -119,7 +119,10 @@ class AccountController extends Controller
             ->filter()
             ->values();
 
-        Account::whereIn('id', $ids)->delete();
+        $accounts = Account::whereIn('id', $ids)->get();
+        foreach ($accounts as $account) {
+            $account->delete();
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Accounts deleted.')]);
 

@@ -9,8 +9,11 @@ import {
     AlertCircle,
     CheckCircle2,
     XCircle,
+    Mail,
 } from 'lucide-react';
+import { useState } from 'react';
 import Heading from '@/components/heading';
+import { SendEmailDrawer, type EmailConfig } from '@/components/send-email-drawer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,7 +24,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { getInitials } from '@/lib/utils';
 import {
     index as usersIndex,
@@ -42,6 +44,7 @@ type PageProps = {
         teams: Team[];
         auth_log_records: AuthLogRecord[];
     };
+    emailConfigurations?: EmailConfig[];
 };
 
 const TYPE_BADGE: Record<
@@ -55,7 +58,9 @@ const TYPE_BADGE: Record<
     system: 'destructive',
 };
 
-export default function UserShow({ user }: PageProps) {
+export default function UserShow({ user, emailConfigurations = [] }: PageProps) {
+    const [isEmailDrawerOpen, setIsEmailDrawerOpen] = useState(false);
+
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Users', href: usersIndex() },
         { title: user.name, href: usersShow.url(user) },
@@ -99,6 +104,12 @@ export default function UserShow({ user }: PageProps) {
                         >
                             <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
                         </Button>
+                        <Button
+                            variant="default"
+                            onClick={() => setIsEmailDrawerOpen(true)}
+                        >
+                            <Mail className="mr-1.5 h-4 w-4" /> Send Email
+                        </Button>
                         {user.is_active ? (
                             <span className="flex items-center gap-1 text-sm font-medium text-green-600">
                                 <CheckCircle2 className="h-4 w-4" /> Active
@@ -126,8 +137,20 @@ export default function UserShow({ user }: PageProps) {
                             <CardTitle>Profile</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3 text-sm">
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="text-muted-foreground">
+                                    Email
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEmailDrawerOpen(true)}
+                                    className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                                >
+                                    <Mail className="h-3.5 w-3.5" />
+                                    {user.email}
+                                </button>
+                            </div>
                             {[
-                                ['Email', user.email],
                                 ['Title', user.title],
                                 ['Salutation', user.salutation_name],
                                 ['Middle Name', user.middle_name],
@@ -260,7 +283,7 @@ export default function UserShow({ user }: PageProps) {
                                                 </p>
                                             </div>
                                         </div>
-                                        <span className="text-xs whitespace-nowrap text-muted-foreground">
+                                        <span className="whitespace-nowrap text-xs text-muted-foreground">
                                             {format(
                                                 new Date(log.created_at),
                                                 'dd MMM HH:mm',
@@ -272,6 +295,13 @@ export default function UserShow({ user }: PageProps) {
                         )}
                     </CardContent>
                 </Card>
+
+                <SendEmailDrawer
+                    open={isEmailDrawerOpen}
+                    onOpenChange={setIsEmailDrawerOpen}
+                    recipient={{ name: user.name, email: user.email }}
+                    emailConfigurations={emailConfigurations}
+                />
             </div>
         </>
     );

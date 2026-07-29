@@ -31,6 +31,11 @@ class NavigationService
                         'href' => '/calendar',
                         'icon' => 'CalendarDays',
                     ],
+                    [
+                        'title' => 'Automations & Compliance',
+                        'href' => '/automations',
+                        'icon' => 'Sparkles',
+                    ],
                 ],
             ],
             [

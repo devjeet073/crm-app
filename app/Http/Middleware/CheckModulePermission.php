@@ -49,7 +49,7 @@ class CheckModulePermission
         $level = $user->effectiveModulePermission($module, $action);
 
         if (! in_array($level, ['own', 'team', 'yes', 'all'], true)) {
-            abort(403, "You do not have permission to {$action} {$module}.");
+            abort(403, __('You do not have permission to :action :module.', ['action' => $action, 'module' => $module]));
         }
 
         return $next($request);

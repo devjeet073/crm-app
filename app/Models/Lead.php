@@ -51,7 +51,7 @@ use Illuminate\Support\Carbon;
     'website', 'address_street', 'address_city', 'address_state', 'address_country', 'address_postal_code',
     'do_not_call', 'description', 'converted_at', 'account_name', 'stream_updated_at',
     'campaign_id', 'created_account_id', 'created_contact_id', 'created_opportunity_id',
-    'created_by_id', 'modified_by_id', 'assigned_user_id',
+    'created_by_id', 'modified_by_id', 'assigned_user_id', 'birth_date',
 ])]
 class Lead extends Model
 {
@@ -68,6 +68,7 @@ class Lead extends Model
             'do_not_call' => 'boolean',
             'converted_at' => 'datetime',
             'stream_updated_at' => 'datetime',
+            'birth_date' => 'date',
         ];
     }
 

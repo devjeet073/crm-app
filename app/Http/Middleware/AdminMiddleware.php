@@ -14,7 +14,7 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         if (! $request->user()?->isAdmin()) {
-            abort(403, 'This action requires administrator access.');
+            abort(403, __('This action requires administrator access.'));
         }
 
         return $next($request);

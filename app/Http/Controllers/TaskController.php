@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
+use App\Http\Requests\UpdateTaskStatusRequest;
 use App\Models\Task;
 use App\Picklists;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -168,14 +168,10 @@ class TaskController extends Controller
         return to_route('tasks.index');
     }
 
-    public function updateStatus(Request $request, Task $task): JsonResponse
+    public function updateStatus(UpdateTaskStatusRequest $request, Task $task): JsonResponse
     {
-        $request->validate([
-            'status' => ['required', 'string', Rule::in(Picklists::TASK_STATUSES)],
-        ]);
-
         $task->update([
-            'status' => $request->input('status'),
+            'status' => $request->validated('status'),
             'modified_by_id' => $request->user()->id,
         ]);
 

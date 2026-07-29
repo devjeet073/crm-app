@@ -60,6 +60,8 @@ class HandleInertiaRequests extends Middleware
                             'delete' => $user->canDeleteModule($module),
                         ]];
                     })->toArray() : null,
+                'unreadNotificationsCount' => $request->user() ? $request->user()->unreadNotifications()->count() : 0,
+                'recentNotifications' => $request->user() ? $request->user()->unreadNotifications()->take(5)->get() : [],
             ],
             'sidebarMenu' => $navigationService->getMenuForUser($request->user()),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',

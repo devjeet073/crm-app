@@ -1,13 +1,14 @@
 import { Head, router } from '@inertiajs/react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { CheckCircle2, XCircle, Trash2 } from 'lucide-react';
-import { useMemo } from 'react';
+import { CheckCircle2, XCircle, Trash2, Mail } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import type { FilterField } from '@/components/advanced-filter';
 import { AdvancedFilter } from '@/components/advanced-filter';
 import { DataTable, DataTableColumnHeader } from '@/components/data-table';
 import { DeleteAlertDialog } from '@/components/delete-alert-dialog';
 import Heading from '@/components/heading';
 import Pagination from '@/components/pagination';
+import { SendEmailDrawer, type EmailConfig } from '@/components/send-email-drawer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ type PageProps = {
     users: Paginated<CrmUser>;
     filters: Record<string, any>;
     filterOptions: Record<string, any[]>;
+    emailConfigurations?: EmailConfig[];
 };
 
 const TYPE_BADGE: Record<
@@ -42,7 +44,19 @@ export default function UsersIndex({
     users,
     filters,
     filterOptions,
+    emailConfigurations = [],
 }: PageProps) {
+    const [selectedUserForEmail, setSelectedUserForEmail] = useState<{
+        name: string;
+        email: string;
+    } | null>(null);
+    const [isEmailDrawerOpen, setIsEmailDrawerOpen] = useState(false);
+
+    const handleOpenEmailDrawer = (user: CrmUser) => {
+        setSelectedUserForEmail({ name: user.name, email: user.email });
+        setIsEmailDrawerOpen(true);
+    };
+
     const availableFields: FilterField[] = [
         { name: 'name', label: 'Name', type: 'text' },
         { name: 'email', label: 'Email', type: 'text' },
@@ -119,9 +133,15 @@ export default function UsersIndex({
                 ),
                 meta: { label: 'Email' },
                 cell: ({ row }) => (
-                    <span className="text-muted-foreground">
+                    <button
+                        type="button"
+                        onClick={() => handleOpenEmailDrawer(row.original)}
+                        className="inline-flex items-center gap-1.5 font-medium text-primary hover:underline"
+                        title="Click to send email"
+                    >
+                        <Mail className="h-3.5 w-3.5 shrink-0" />
                         {row.original.email}
-                    </span>
+                    </button>
                 ),
             },
             {
@@ -217,6 +237,14 @@ export default function UsersIndex({
 
                     return (
                         <div className="flex items-center justify-end gap-1">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleOpenEmailDrawer(user)}
+                                title="Send Email"
+                            >
+                                <Mail className="h-4 w-4" />
+                            </Button>
                             <Button variant="ghost" size="sm" asChild>
                                 <a href={usersShow.url(user)}>View</a>
                             </Button>
@@ -268,6 +296,13 @@ export default function UsersIndex({
                 />
 
                 <Pagination links={users.links} />
+
+                <SendEmailDrawer
+                    open={isEmailDrawerOpen}
+                    onOpenChange={setIsEmailDrawerOpen}
+                    recipient={selectedUserForEmail}
+                    emailConfigurations={emailConfigurations}
+                />
             </div>
         </>
     );
