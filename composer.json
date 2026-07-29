@@ -23,7 +23,7 @@
         "laravel/boost": "^2.2",
         "laravel/pail": "^1.2.5",
         "laravel/pao": "^1.0.6",
-        "laravel/pint": "^1.27",
+        "laravel/pint": "^1.30",
         "laravel/sail": "^1.53",
         "laravel/telescope": "^5.21",
         "mockery/mockery": "^1.6",

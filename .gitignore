@@ -29,3 +29,4 @@ yarn-error.log
 /.zed
 package-lock.json
 composer-lock.json
+composer.lock

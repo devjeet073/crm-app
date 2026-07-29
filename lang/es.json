@@ -1,0 +1,17 @@
+{
+    "Role assigned to users.": "Rol asignado a los usuarios.",
+    "Role revoked from user.": "Rol revocado del usuario.",
+    "Role assigned to team.": "Rol asignado al equipo.",
+    "Role revoked from team.": "Rol revocado del equipo.",
+    "User added to team.": "Usuario añadido al equipo.",
+    "User removed from team.": "Usuario eliminado del equipo.",
+    "Dashboard": "Panel de Control",
+    "Accounts": "Cuentas",
+    "Contacts": "Contactos",
+    "Leads": "Clientes Potenciales",
+    "Tasks": "Tareas",
+    "Documents": "Documentos",
+    "Calendar": "Calendario",
+    "Settings": "Configuración",
+    "Welcome": "Bienvenido"
+}

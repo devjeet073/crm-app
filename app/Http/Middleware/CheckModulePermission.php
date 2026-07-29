@@ -29,8 +29,12 @@ class CheckModulePermission
             $method = $request->method();
             if ($method === 'GET') {
                 $action = 'view';
-                if ($request->routeIs('*.create')) $action = 'insert';
-                if ($request->routeIs('*.edit')) $action = 'update';
+                if ($request->routeIs('*.create')) {
+                    $action = 'insert';
+                }
+                if ($request->routeIs('*.edit')) {
+                    $action = 'update';
+                }
             } elseif ($method === 'POST') {
                 $action = 'insert';
             } elseif (in_array($method, ['PUT', 'PATCH'])) {
