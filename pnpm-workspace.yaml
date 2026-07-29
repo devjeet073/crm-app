@@ -2,7 +2,8 @@ packages:
   - '.'
 
 allowBuilds:
-  unrs-resolver: set this to true or false
+  es5-ext: true
+  unrs-resolver: true
 
 publicHoistPattern:
   - '@inertiajs/core'

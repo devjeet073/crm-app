@@ -13,6 +13,28 @@ export default defineConfig({
             '@': '/resources/js',
         },
     },
+    build: {
+        chunkSizeWarningLimit: 1000,
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('@fullcalendar')) {
+                        return 'fullcalendar';
+                    }
+                    if (id.includes('recharts')) {
+                        return 'charts';
+                    }
+                    if (
+                        id.includes('node_modules/react/') ||
+                        id.includes('node_modules/react-dom/') ||
+                        id.includes('node_modules/@inertiajs/')
+                    ) {
+                        return 'vendor';
+                    }
+                },
+            },
+        },
+    },
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
@@ -36,6 +58,6 @@ export default defineConfig({
         FontaineTransform.vite({
             fallbacks: ['Arial', 'Helvetica', 'sans-serif'],
             resolvePath: (id) => new URL('./resources/css/fonts/' + id, import.meta.url),
-        })
+        }),
     ],
 });
